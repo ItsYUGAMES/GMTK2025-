@@ -2074,12 +2074,12 @@ MonoBehaviour:
   successKeyColor: {r: 0, g: 1, b: 0, a: 1}
   missKeyColor: {r: 1, g: 0, b: 0, a: 1}
   feedbackDisplayDuration: 0.2
-  beatInterval: 0.5
-  successWindow: 0.4
-  highlightDuration: 0.8
+  beatInterval: 0.4
+  successWindow: 0.3
+  highlightDuration: 0.4
   infiniteLoop: 1
-  slowMotionDuration: 1.5
-  slowMotionTimeScale: 0.3
+  slowMotionDuration: 0
+  slowMotionTimeScale: 0
   slowMotionTintColor: {r: 0.8, g: 0.8, b: 1, a: 0.7}
   slowMotionIndicator: {fileID: 0}
   primaryKey: 97
@@ -2106,7 +2106,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1272749738}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05e07b771341d8d4688be1c3fdd25ff0, type: 3}
   m_Name: 
@@ -2426,7 +2426,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1445982206
 RectTransform:
   m_ObjectHideFlags: 0
