@@ -8,9 +8,9 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 切换到游戏场景
     /// </summary>
-    public void LoadGameScene()
+    public void GameStart()
     {
-        SceneManager.LoadScene("GameScene"); // 替换为你的游戏场景名称
+        SceneManager.LoadScene("GamePlay"); // 替换为你的游戏场景名称
     }
     
     /// <summary>
