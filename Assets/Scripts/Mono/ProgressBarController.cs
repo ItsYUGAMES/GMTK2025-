@@ -52,15 +52,15 @@ public class ProgressBarController : MonoBehaviour
             Debug.LogError("Coin Prefab 未设置！金币将无法掉落。", this);
         }
 
-        // StartFilling(); // 可以在游戏开始时立即启动填充
+        StartFilling(); // 可以在游戏开始时立即启动填充
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !isFilling)
-        {
-            StartFilling();
-        }
+        // if (Input.GetKeyDown(KeyCode.Space) && !isFilling)
+        // {
+        //     StartFilling();
+        // }
     }
 
     public void StartFilling()
