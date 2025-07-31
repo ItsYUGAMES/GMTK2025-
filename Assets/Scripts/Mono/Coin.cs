@@ -9,7 +9,8 @@ public class Coin : MonoBehaviour
 
     private Action onDestroyCallback; // 销毁时的回调
     private Camera mainCamera;
-    private bool isDestroyed = false; // 防止重复销毁
+    public bool isDestroyed = false; // 防止重复销毁
+    private bool isCollected = false; // 防止重复收集
 
     private void Awake()
     {
@@ -45,6 +46,23 @@ public class Coin : MonoBehaviour
         }
     }
 
+    public void CollectCoin()
+    {
+        if (isCollected || isDestroyed) return;
+
+        isCollected = true;
+        Debug.Log($"玩家收集硬币，获得 {coinValue} 金币");
+
+        // 增加玩家金币
+        ShopManager shopManager = FindObjectOfType<ShopManager>();
+        if (shopManager != null)
+        {
+            shopManager.AddPlayerGold(coinValue);
+        }
+
+        DestroyCoin();
+    }
+
     private bool ShouldDestroy()
     {
         if (mainCamera != null)
@@ -52,7 +70,7 @@ public class Coin : MonoBehaviour
             // 获取屏幕底部的世界坐标
             float cameraZDistance = -mainCamera.transform.position.z;
             Vector3 screenBottom = mainCamera.ViewportToWorldPoint(new Vector3(0.5f, 0, cameraZDistance));
-            
+
             // 如果金币掉到屏幕底部以下一定距离就销毁
             return transform.position.y < screenBottom.y - 2f;
         }
@@ -66,13 +84,13 @@ public class Coin : MonoBehaviour
     private void DestroyCoin()
     {
         if (isDestroyed) return;
-        
+
         isDestroyed = true;
-        Debug.Log($"硬币 {gameObject.name} 掉出屏幕，自动销毁");
-        
+        Debug.Log($"硬币 {gameObject.name} 被销毁");
+
         // 调用销毁回调
         onDestroyCallback?.Invoke();
-        
+
         // 销毁硬币
         Destroy(gameObject);
     }
