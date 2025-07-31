@@ -19,7 +19,7 @@ public class ShopManager : MonoBehaviour
 
     [Header("玩家数据")]
     public TextMeshProUGUI playerGoldText;
-    private int playerGold = 500; // 示例玩家金币
+    public int playerGold; // 示例玩家金币
 
     void Start()
     {
@@ -162,7 +162,10 @@ public class ShopManager : MonoBehaviour
     }
 
     // 获取玩家金币
-    public int GetPlayerGold() { return playerGold; }
+    public int GetPlayerGold()
+    {
+        return playerGold;
+    }
 
     // 扣除玩家金币
     public bool DeductPlayerGold(int amount)
@@ -183,5 +186,12 @@ public class ShopManager : MonoBehaviour
         {
             playerGoldText.text = $"金币: {playerGold}";
         }
+    }
+    
+    public void AddPlayerGold(int amount)
+    {
+        playerGold += amount;
+        UpdatePlayerGoldUI();
+        Debug.Log($"金币增加 {amount}，当前金币: {playerGold}");
     }
 }

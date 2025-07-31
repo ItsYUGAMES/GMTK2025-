@@ -40,4 +40,6 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
     }
+    
+    
 }
