@@ -1,12 +1,13 @@
 using UnityEngine;
-using System;
+using System.Collections.Generic;
 
 public class PauseManager : MonoBehaviour
 {
     public static PauseManager Instance { get; private set; }
     public bool IsPaused { get; private set; } = false;
 
-    public event Action<bool> OnPauseChanged;
+    // 所有注册的可暂停脚本
+    private readonly List<IPausable> pausableScripts = new List<IPausable>();
 
     private void Awake()
     {
@@ -19,20 +20,36 @@ public class PauseManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void SetPause(bool pause)
+    // 注册
+    public void Register(IPausable script)
     {
-        if (IsPaused == pause) return;
-        IsPaused = pause;
-
-        // 使用极慢时间而不是完全停止，这样视觉反馈仍然可以工作
-        Time.timeScale = pause ? 0.1f : 1f;
-
-        OnPauseChanged?.Invoke(pause);
+        if (!pausableScripts.Contains(script))
+            pausableScripts.Add(script);
     }
 
-    private void OnDestroy()
+    // 注销
+    public void Unregister(IPausable script)
     {
-        // 确保销毁时恢复时间缩放
-        Time.timeScale = 1f;
+        pausableScripts.Remove(script);
+    }
+
+    /// <summary>
+    /// 全局暂停，exempt为豁免对象（只解锁这一个，其它都暂停）
+    /// exempt=null时为全体暂停或全体恢复
+    /// </summary>
+    public void SetPause(bool pause, IPausable exempt = null)
+    {
+        IsPaused = pause;
+        foreach (var script in pausableScripts)
+        {
+            if (!pause)
+            {
+                script.SetPaused(false); // 全体恢复
+            }
+            else
+            {
+                script.SetPaused(script != exempt); // 只豁免exempt
+            }
+        }
     }
 }
