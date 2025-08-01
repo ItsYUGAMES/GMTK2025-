@@ -20,14 +20,16 @@ public class SFXManager : MonoBehaviour
 
     private int currentMusicIndex = 0;
     private bool isMusicPlaying = false;
-
+    [Header("UI音效")]
+    public AudioClip buttonClickSFX;
+    public AudioClip buttonHoverSFX;
     void Awake()
     {
         // 单例模式
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject); // 已经设置了
             InitializeAudioSources();
         }
         else
@@ -92,7 +94,20 @@ public class SFXManager : MonoBehaviour
         isMusicPlaying = false;
         Debug.Log("背景音乐已停止");
     }
-
+    // 停止指定索引的背景音乐
+    public void StopSpecificBackgroundMusic(int musicIndex)
+    {
+        if (isMusicPlaying && currentMusicIndex == musicIndex)
+        {
+            musicAudioSource.Stop();
+            isMusicPlaying = false;
+            Debug.Log($"已停止播放背景音乐[{musicIndex}]: {backgroundMusic[musicIndex].name}");
+        }
+        else if (currentMusicIndex != musicIndex)
+        {
+            Debug.Log($"当前播放的不是音乐[{musicIndex}]，无需停止");
+        }
+    }
     // 暂停/恢复背景音乐
     public void PauseBackgroundMusic()
     {
@@ -102,7 +117,7 @@ public class SFXManager : MonoBehaviour
             Debug.Log("背景音乐已暂停");
         }
     }
-
+    
     public void ResumeBackgroundMusic()
     {
         if (isMusicPlaying)
@@ -172,7 +187,13 @@ public class SFXManager : MonoBehaviour
     {
         sfxAudioSource.mute = !sfxAudioSource.mute;
     }
+// 获取音效AudioSource
+    public AudioSource GetAudioSource()
+    {
+        return sfxAudioSource;
+    }
 
+    // 获取当前状态
     // 获取当前状态
     public bool IsMusicPlaying() => isMusicPlaying && musicAudioSource.isPlaying;
     public float GetMusicVolume() => musicVolume;
@@ -188,5 +209,58 @@ public class SFXManager : MonoBehaviour
         {
             PlayNextMusic();
         }
+    }
+    
+    // 播放按钮点击音效
+    public void PlayButtonClickSFX()
+    {
+        if (buttonClickSFX != null)
+        {
+            sfxAudioSource.time = 0.3f;
+            sfxAudioSource.PlayOneShot(buttonClickSFX);
+        }
+    }
+    
+    public void OnButtonClick()
+    {
+        Debug.Log($"按钮被点击，backgroundMusic数组长度: {backgroundMusic.Length}");
+        Debug.Log($"当前音乐播放状态: {isMusicPlaying}");
+    
+        // 播放点击音效
+        SFXManager.Instance.PlayButtonClickSFX();
+
+        // 检查数组长度
+        if (backgroundMusic.Length > 1)
+        {
+            SFXManager.Instance.PlayBackgroundMusic(1);
+            Debug.Log("开始播放backgroundMusic[1]");
+        }
+        else
+        {
+            Debug.LogError("backgroundMusic数组中没有索引为1的音乐！");
+        }
+    }
+
+// 播放按钮悬停音效
+    public void PlayButtonHoverSFX()
+    {
+        if (buttonHoverSFX != null)
+        {
+            sfxAudioSource.PlayOneShot(buttonHoverSFX);
+        }
+    }
+
+// 通用的播放指定音效的方法（通过名称）
+    public void PlaySFXByName(string clipName)
+    {
+        for (int i = 0; i < soundEffects.Length; i++)
+        {
+            if (soundEffects[i] != null && soundEffects[i].name == clipName)
+            {
+                sfxAudioSource.PlayOneShot(soundEffects[i]);
+                return;
+            }
+        }
+        Debug.LogWarning($"未找到名为 {clipName} 的音效");
     }
 }

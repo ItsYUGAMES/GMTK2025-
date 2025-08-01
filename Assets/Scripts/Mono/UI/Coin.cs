@@ -5,12 +5,15 @@ public class Coin : MonoBehaviour
 {
     [Header("硬币设置")]
     public int coinValue = 10;
-    public float destroyBelowY = -10f; // 当金币Y坐标低于此值时销毁
+    public float destroyBelowY = -10f;
 
-    private Action onDestroyCallback; // 销毁时的回调
+    [Header("音效设置")]
+    public AudioClip coinCollectSFX;
+
     private Camera mainCamera;
-    public bool isDestroyed = false; // 防止重复销毁
-    private bool isCollected = false; // 防止重复收集
+    private bool isCollected = false;
+    private bool isDestroyed = false;
+    private Action onDestroyCallback;
 
     private void Awake()
     {
@@ -46,10 +49,6 @@ public class Coin : MonoBehaviour
 
     private void Update()
     {
-        // 检查游戏是否暂停
-        // 修改：使用正确的属性名 IsPaused 而不是 IsGamePaused()
-      
-
         // 检查金币是否掉出屏幕
         if (!isDestroyed && ShouldDestroy())
         {
@@ -67,12 +66,17 @@ public class Coin : MonoBehaviour
             Vector3 mousePosition = Input.mousePosition;
             Ray ray = mainCamera.ScreenPointToRay(mousePosition);
 
-            // 使用射线检测2D碰撞器
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+            // 使用RaycastAll检测所有2D碰撞器
+            RaycastHit2D[] hits = Physics2D.RaycastAll(ray.origin, ray.direction);
 
-            if (hit.collider != null && hit.collider.gameObject == gameObject)
+            // 遍历所有检测到的碰撞器
+            foreach (RaycastHit2D hit in hits)
             {
-                CollectCoin();
+                if (hit.collider != null && hit.collider.gameObject == gameObject)
+                {
+                    CollectCoin();
+                    break; // 找到当前硬币后立即跳出循环
+                }
             }
         }
     }
@@ -83,6 +87,12 @@ public class Coin : MonoBehaviour
 
         isCollected = true;
         Debug.Log($"玩家点击收集硬币，获得 {coinValue} 金币");
+
+        // 播放金币收集音效
+        if (SFXManager.Instance != null && coinCollectSFX != null)
+        {
+            SFXManager.Instance.PlaySFX(coinCollectSFX);
+        }
 
         // 使用PlayerDataManager增加金币
         if (PlayerDataManager.Instance != null)

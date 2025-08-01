@@ -1,13 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
-public class IntroCutsceneManager : MonoBehaviour
+public class IntroManager : MonoBehaviour
 {
     [Header("音频组件")]
-    public AudioSource announcerAudio;
-    public AudioSource audienceApplause;
-    public AudioSource audienceLine;
-
+    public AudioClip announcerAudio;
+    public AudioClip audienceApplause;
+    public AudioClip dragonMoveSFX; // 龙头移动音效
+    
     [Header("龙头动画设置")]
     public Transform dragonHeadUp;
     public Transform dragonHeadDown;
@@ -34,8 +34,24 @@ public class IntroCutsceneManager : MonoBehaviour
     private Vector3 upDragonBasePos;
     private Vector3 downDragonBasePos;
 
+    // IntroManager应该只在Intro场景中存在，不需要单例
+    void Awake()
+    {
+        // 移除DontDestroyOnLoad和单例逻辑
+        // IntroManager只在当前场景中工作
+    }
     void Start()
     {
+        
+        // 停止背景音乐[0]
+        if (SFXManager.Instance != null)
+        {
+            SFXManager.Instance.StopSpecificBackgroundMusic(0);
+            Debug.Log("进入Intro场景，停止背景音乐[0]");
+        }
+        // 自动查找龙头Transform
+        FindDragonHeads();
+    
         // 初始化上龙头位置
         if (dragonHeadUp != null)
         {
@@ -55,31 +71,44 @@ public class IntroCutsceneManager : MonoBehaviour
         StartCoroutine(PlayCutscene());
     }
 
+    private void FindDragonHeads()
+    {
+        // 通过名称查找龙头
+        GameObject upDragon = GameObject.Find("Up");
+        GameObject downDragon = GameObject.Find("Down");
+    
+        if (upDragon != null)
+        {
+            dragonHeadUp = upDragon.transform;
+            Debug.Log("找到上龙头: " + upDragon.name);
+        }
+        else
+        {
+            Debug.LogError("未找到名为 'Up' 的龙头GameObject");
+        }
+    
+        if (downDragon != null)
+        {
+            dragonHeadDown = downDragon.transform;
+            Debug.Log("找到下龙头: " + downDragon.name);
+        }
+        else
+        {
+            Debug.LogError("未找到名为 'Down' 的龙头GameObject");
+        }
+    }
+
     IEnumerator PlayCutscene()
     {
         // 播放主持人的音频
-        if (announcerAudio != null)
+        if (SFXManager.Instance != null && announcerAudio != null)
         {
-            announcerAudio.Play();
-            yield return new WaitForSeconds(announcerAudio.clip.length);
+            SFXManager.Instance.PlaySFX(announcerAudio);
+            yield return new WaitForSeconds(announcerAudio.length);
         }
 
-        // 播放掌声
-        if (audienceApplause != null)
-        {
-            audienceApplause.Play();
-            yield return new WaitForSeconds(audienceApplause.clip.length);
-        }
-
-        // 播放观众台词
-        if (audienceLine != null)
-        {
-            audienceLine.Play();
-            yield return new WaitForSeconds(audienceLine.clip.length);
-        }
-
-        // 音频播放完成后，龙头一起移动
-        MoveBothDragons();
+        // 同时开始龙头移动和播放掌声
+        StartCoroutine(MoveBothDragonsWithApplause());
 
         // 等待龙头移动完成
         while (isUpDragonMoving || isDownDragonMoving)
@@ -89,6 +118,28 @@ public class IntroCutsceneManager : MonoBehaviour
 
         yield return new WaitForSeconds(1.0f);
         Debug.Log("剧情播放完成");
+    }
+
+    IEnumerator MoveBothDragonsWithApplause()
+    {
+        if (SFXManager.Instance != null && dragonMoveSFX != null)
+        {
+            AudioSource audioSource = SFXManager.Instance.GetAudioSource(); // 假设有方法获取 AudioSource
+            audioSource.clip = dragonMoveSFX;
+            audioSource.time = 0.1f;
+            audioSource.Play();
+        }
+
+        // 播放掌声
+        if (SFXManager.Instance != null && audienceApplause != null)
+        {
+            SFXManager.Instance.PlaySFX(audienceApplause);
+        }
+
+        // 开始龙头移动
+        MoveBothDragons();
+
+        yield return null;
     }
 
     #region 独立龙头移动控制
