@@ -51,12 +51,6 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
             OnBeatSuccess();
     }
 
-    protected override void OnBeatSuccess()
-    {
-        base.OnBeatSuccess();
-        onADKeySucceeded?.Invoke();
-    }
-
     protected override void OnBeatFailed()
     {
         base.OnBeatFailed();
