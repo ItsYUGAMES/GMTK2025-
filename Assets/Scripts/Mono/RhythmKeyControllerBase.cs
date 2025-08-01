@@ -35,15 +35,15 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     public int failToLose = 5;
     public int needConsecutiveSuccessToResume = 4;
 
-
+   
     // ״̬��
-    protected int successCount = 0;
+    public int successCount = 0;
     protected int failCount = 0;
     protected bool isGameEnded = false;
-    protected bool isInPauseForFailure = false;
+    public bool isPaused = false;
     protected bool pausedByManager = false;   // ��PauseManager��ͣ
     protected KeyCode lastFailedKey;
-    protected int consecutiveSuccessOnFailedKey = 0;
+    public int consecutiveSuccessOnFailedKey = 0;
 
     // ����ʱ
     protected SpriteRenderer primaryKeySpriteRenderer;
@@ -114,23 +114,32 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     // ========== ��ѭ�� ==========
     protected virtual void Update()
     {
-        if (pausedByManager) return;         // ��ȫ�ֻ�ֲ�����
+        if (pausedByManager) return;
         if (isGameEnded) return;
 
-        if (isInPauseForFailure)
-        {
-            HandlePauseRecoveryInput();
-            return;
-        }
+        // 移除暂停状态的特殊处理，让脚本正常运行
+        // if (isPaused)
+        // {
+        //     HandlePauseRecoveryInput();
+        //     CheckBeatTiming();
+        //     return;
+        // }
 
         CheckBeatTiming();
         HandlePlayerInput();
+    
+        // 暂停状态下也处理恢复输入
+        if (isPaused)
+        {
+            HandlePauseRecoveryInput();
+        }
     }
 
     // ========== ������� ==========
     protected virtual void HandlePlayerInput()
     {
-        if (isGameEnded || isInPauseForFailure) return;
+        if (isGameEnded) return;
+        // 移除 isPaused 检查，让暂停状态下也能正常输入
 
         if (Input.GetKeyDown(keyConfig.primaryKey))
             OnKeyPressed(keyConfig.primaryKey);
@@ -140,24 +149,9 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
 
     protected virtual void HandlePauseRecoveryInput()
     {
-        if (Input.GetKeyDown(lastFailedKey))
+        if (consecutiveSuccessOnFailedKey >= needConsecutiveSuccessToResume)
         {
-            consecutiveSuccessOnFailedKey++;
-            ShowFeedback(lastFailedKey, successKeyColor);
-            Debug.Log($"��ͣ�ָ�����: {consecutiveSuccessOnFailedKey}/{needConsecutiveSuccessToResume}");
-
-            if (consecutiveSuccessOnFailedKey >= needConsecutiveSuccessToResume)
-                ResumeFromPause();
-        }
-        else if (IsOtherControllerKeyPressed())
-        {
-            KeyCode otherKey = (lastFailedKey == keyConfig.primaryKey) ? keyConfig.secondaryKey : keyConfig.primaryKey;
-            if (Input.GetKeyDown(otherKey))
-            {
-                consecutiveSuccessOnFailedKey = 0;
-                ShowFeedback(otherKey, missKeyColor);
-                Debug.Log("����������ûָ�����");
-            }
+            ResumeFromPause();
         }
     }
 
@@ -167,11 +161,12 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         return Input.GetKeyDown(otherKey);
     }
 
-    // ========== �����߼� ==========
+  
     protected virtual void StartNextBeat()
     {
-        if (isInPauseForFailure) return;
-
+        if (pausedByManager) return;  // 只阻止管理器暂停，允许失败暂停继续节拍
+    
+        Debug.Log("NextBeat");
         expectedKey = (beatCounter % 2 == 0) ? keyConfig.primaryKey : keyConfig.secondaryKey;
         currentBeatStartTime = Time.time;
         waitingForInput = true;
@@ -210,13 +205,21 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         waitingForInput = false;
         ShowFeedback(expectedKey, successKeyColor);
 
-        if (successCount >= successToPass)
+        // 如果在暂停状态下成功，增加恢复计数
+        if (isPaused)
         {
-            isGameEnded = true;
-            OnGameSuccess();
-            return;
+            consecutiveSuccessOnFailedKey++;
+            Debug.Log($"暂停恢复进度: {consecutiveSuccessOnFailedKey}/{needConsecutiveSuccessToResume}");
+        
+            // 如果达到恢复要求，恢复游戏
+            if (consecutiveSuccessOnFailedKey >= needConsecutiveSuccessToResume)
+            {
+                ResumeFromPause();
+                return; // 恢复后会重启协程，所以这里直接返回
+            }
         }
 
+        // 正常重启协程
         if (beatCoroutine != null) StopCoroutine(beatCoroutine);
         beatCoroutine = StartCoroutine(WaitForNextBeat());
     }
@@ -229,44 +232,54 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         waitingForInput = false;
         ShowFeedback(expectedKey, missKeyColor);
 
-        EnterPauseForFailure();
-
-        // ===== ֻ���⵱ǰ���������� =====
-       
+        // 如果在暂停状态下失败，重置恢复计数
+        if (isPaused)
+        {
+            consecutiveSuccessOnFailedKey = 0;
+            Debug.Log("暂停状态下失败，重置恢复进度");
+        }
+        else
+        {
+            // 只有在非暂停状态下才进入暂停
+            EnterPauseForFailure();
+        }
 
         if (failCount >= failToLose)
         {
             isGameEnded = true;
             OnGameFail();
+            return;
         }
+
+        // 重启协程
+        if (beatCoroutine != null) StopCoroutine(beatCoroutine);
+        beatCoroutine = StartCoroutine(WaitForNextBeat());
     }
 
     protected virtual void EnterPauseForFailure()
     {
-        isInPauseForFailure = true;
+        isPaused = true;
         lastFailedKey = expectedKey;
         consecutiveSuccessOnFailedKey = 0;
 
-        if (beatCoroutine != null)
-        {
-            StopCoroutine(beatCoroutine);
-            beatCoroutine = null;
-        }
-
-        PauseAllAnimations();
+        // 不暂停动画，让一切正常运行
+        // PauseAllAnimations();
+    
         SetKeyColor(lastFailedKey, missKeyColor);
-        Debug.Log($"[{keyConfigPrefix}] ������ͣ״̬����Ҫ������ {lastFailedKey} �� {needConsecutiveSuccessToResume} �λָ�");
+        Debug.Log($"[{keyConfigPrefix}] 进入暂停状态，需要连按 {lastFailedKey} 键 {needConsecutiveSuccessToResume} 次恢复");
     }
 
     protected virtual void ResumeFromPause()
     {
-        isInPauseForFailure = false;
+        isPaused = false;
         consecutiveSuccessOnFailedKey = 0;
-        ResumeAllAnimations();
+    
+        // 不需要恢复动画，因为没有暂停
+        // ResumeAllAnimations();
+    
         SetAllKeysColor(normalKeyColor);
 
-        // ==== �ָ�ȫ�� ====
-
+        // 正常的协程重启逻辑保持不变
         if (beatCoroutine != null) StopCoroutine(beatCoroutine);
         beatCoroutine = StartCoroutine(WaitForNextBeat());
     }
@@ -310,7 +323,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         yield return new WaitForSecondsRealtime(0.1f);
         SetAllKeysColor(normalKeyColor);
         yield return new WaitForSecondsRealtime(beatInterval - 0.1f);
-        if (infiniteLoop && !isInPauseForFailure) StartNextBeat();
+        if (infiniteLoop) StartNextBeat();
     }
 
     // ========== �Ӿ�������� ==========
@@ -334,7 +347,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         Color originalColor = renderer.color;
         renderer.color = feedbackColor;
 
-        if (isInPauseForFailure)
+        if (isPaused)
         {
             float elapsedTime = 0;
             while (elapsedTime < feedbackDisplayDuration)
@@ -348,10 +361,22 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             yield return new WaitForSecondsRealtime(feedbackDisplayDuration);
         }
 
-        if (isInPauseForFailure && renderer == GetKeyRenderer(lastFailedKey))
+        // 修改颜色恢复逻辑 - 优先显示当前节拍高亮
+        if (renderer == GetKeyRenderer(expectedKey) && waitingForInput)
+        {
+            // 当前节拍的键始终显示高亮，即使在暂停状态
+            renderer.color = highlightKeyColor;
+        }
+        else if (isPaused && renderer == GetKeyRenderer(lastFailedKey))
+        {
+            // 失败键在非当前节拍时显示红色
             renderer.color = missKeyColor;
+        }
         else
+        {
+            // 其他情况显示正常颜色
             renderer.color = normalKeyColor;
+        }
     }
 
     protected SpriteRenderer GetKeyRenderer(KeyCode key)
@@ -371,7 +396,19 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             else if (key == keyConfig.secondaryKey && secondaryKeyColorCoroutine != null)
                 StopCoroutine(secondaryKeyColorCoroutine);
 
-            renderer.color = color;
+            // 暂停状态下的特殊处理
+            if (isPaused && key == lastFailedKey && color == normalKeyColor)
+            {
+                // 如果是失败键且要设置为正常颜色，检查是否应该高亮
+                if (key == expectedKey && waitingForInput)
+                    renderer.color = highlightKeyColor;  // 当前节拍键保持高亮
+                else
+                    renderer.color = missKeyColor;       // 失败键保持红色
+            }
+            else
+            {
+                renderer.color = color;
+            }
         }
     }
 

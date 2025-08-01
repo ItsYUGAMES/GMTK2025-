@@ -1,84 +1,133 @@
-using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
 
 /// <summary>
-/// Í³¼ÆÔİÍ£ºóÁ¬Ğø³É¹¦µÄ´ÎÊı
+/// ç»Ÿè®¡æš‚åœçŠ¶æ€ä¸‹è¿ç»­æˆåŠŸçš„æ¬¡æ•°
 /// </summary>
 public class PauseSuccessCounter : MonoBehaviour
 {
-    [Header("UIÏÔÊ¾")]
-    [SerializeField] private Text successCountText;
-    [SerializeField] private string displayPrefix = "Á¬Ğø³É¹¦: ";
-    [SerializeField] private bool showMaxRequired = true; // ÊÇ·ñÏÔÊ¾ĞèÒªµÄ×î´ó´ÎÊı
+    [Header("UIæ˜¾ç¤º")]
+    [SerializeField] private TextMeshProUGUI successCountText;
 
-    [Header("¿ØÖÆÆ÷ÒıÓÃ")]
+    [Header("èŠ‚æ‹æ§åˆ¶å™¨")]
     [SerializeField] private List<RhythmKeyControllerBase> rhythmControllers = new List<RhythmKeyControllerBase>();
 
-    private RhythmKeyControllerBase currentPausedController = null;
-    private int currentSuccessCount = 0;
-    private int requiredSuccessCount = 0;
+    // å­˜å‚¨æ¯ä¸ªæ§åˆ¶å™¨çš„æˆåŠŸæ¬¡æ•°
+    private Dictionary<RhythmKeyControllerBase, int> controllerSuccessCounts = new Dictionary<RhythmKeyControllerBase, int>();
+    
+    // å­˜å‚¨æ¯ä¸ªæ§åˆ¶å™¨ä¸Šä¸€å¸§çš„æš‚åœçŠ¶æ€
+    private bool[] lastPausedStates;
 
     void Start()
     {
+        // åˆå§‹åŒ–æ§åˆ¶å™¨çŠ¶æ€
+        lastPausedStates = new bool[rhythmControllers.Count];
+        
+        for (int i = 0; i < rhythmControllers.Count; i++)
+        {
+            var controller = rhythmControllers[i];
+            if (controller != null)
+            {
+                controllerSuccessCounts[controller] = 0;
+                lastPausedStates[i] = IsControllerPaused(controller); // è®°å½•åˆå§‹çŠ¶æ€
+                Debug.Log($"[PauseSuccessCounter] åˆå§‹åŒ–æ§åˆ¶å™¨: {controller.keyConfigPrefix}");
+            }
+        }
+
         UpdateDisplay();
     }
 
     void Update()
     {
-        // ²éÕÒµ±Ç°´¦ÓÚÔİÍ£×´Ì¬µÄ¿ØÖÆÆ÷
-        RhythmKeyControllerBase pausedController = FindPausedController();
-
-        if (pausedController != null)
+        for (int i = 0; i < rhythmControllers.Count; i++)
         {
-            // Èç¹ûÊÇĞÂµÄÔİÍ£¿ØÖÆÆ÷£¬ÖØÖÃ¼ÆÊı
-            if (currentPausedController != pausedController)
+            var controller = rhythmControllers[i];
+            if (controller != null)
             {
-                currentPausedController = pausedController;
-                currentSuccessCount = 0;
-                requiredSuccessCount = GetRequiredSuccessCount(pausedController);
-            }
+                bool currentPaused = IsControllerPaused(controller);
+                bool lastPaused = lastPausedStates[i];
 
-            // »ñÈ¡µ±Ç°µÄÁ¬Ğø³É¹¦´ÎÊı
-            int consecutiveSuccess = GetConsecutiveSuccessCount(pausedController);
-
-            // ¸üĞÂ¼ÆÊı
-            if (consecutiveSuccess != currentSuccessCount)
-            {
-                currentSuccessCount = consecutiveSuccess;
-                UpdateDisplay();
-
-                Debug.Log($"[PauseSuccessCounter] {pausedController.keyConfigPrefix} Á¬Ğø³É¹¦: {currentSuccessCount}/{requiredSuccessCount}");
-
-                // ¼ì²éÊÇ·ñ¼´½«»Ö¸´
-                if (currentSuccessCount >= requiredSuccessCount)
+                // å¦‚æœæ§åˆ¶å™¨å¤„äºæš‚åœçŠ¶æ€ï¼Œæ›´æ–°æˆåŠŸè®¡æ•°
+                if (currentPaused)
                 {
-                    Debug.Log($"[PauseSuccessCounter] {pausedController.keyConfigPrefix} ¼´½«»Ö¸´ÓÎÏ·£¡");
+                    int currentSuccess = GetConsecutiveSuccessCount(controller);
+                    if (currentSuccess != controllerSuccessCounts[controller])
+                    {
+                        controllerSuccessCounts[controller] = currentSuccess;
+                        UpdateDisplay();
+                        Debug.Log($"[PauseSuccessCounter] {controller.keyConfigPrefix} æš‚åœæˆåŠŸæ¬¡æ•°: {currentSuccess}");
+                    }
                 }
-            }
-        }
-        else
-        {
-            // Ã»ÓĞ¿ØÖÆÆ÷´¦ÓÚÔİÍ£×´Ì¬
-            if (currentPausedController != null)
-            {
-                currentPausedController = null;
-                currentSuccessCount = 0;
-                UpdateDisplay();
+                else
+                {
+                    // å¦‚æœä»æš‚åœçŠ¶æ€æ¢å¤ï¼Œé‡ç½®è®¡æ•°
+                    if (lastPaused && !currentPaused)
+                    {
+                        controllerSuccessCounts[controller] = 0;
+                        UpdateDisplay();
+                        Debug.Log($"[PauseSuccessCounter] {controller.keyConfigPrefix} æ¢å¤ï¼Œé‡ç½®è®¡æ•°");
+                    }
+                }
+
+                // æ›´æ–°çŠ¶æ€
+                lastPausedStates[i] = currentPaused;
             }
         }
     }
 
     /// <summary>
-    /// ²éÕÒµ±Ç°´¦ÓÚÔİÍ£×´Ì¬µÄ¿ØÖÆÆ÷
+    /// æ£€æµ‹æ§åˆ¶å™¨æ˜¯å¦å¤„äºæš‚åœçŠ¶æ€
+    /// </summary>
+    private bool IsControllerPaused(RhythmKeyControllerBase controller)
+    {
+        return controller.isPaused;
+    }
+
+    /// <summary>
+    /// è·å–æ§åˆ¶å™¨çš„è¿ç»­æˆåŠŸæ¬¡æ•°
+    /// </summary>
+    private int GetConsecutiveSuccessCount(RhythmKeyControllerBase controller)
+    {
+        return controller.consecutiveSuccessOnFailedKey;
+    }
+
+    /// <summary>
+    /// è·å–éœ€è¦çš„æˆåŠŸæ¬¡æ•°
+    /// </summary>
+    private int GetRequiredSuccessCount(RhythmKeyControllerBase controller)
+    {
+        return controller.needConsecutiveSuccessToResume;
+    }
+
+    private void UpdateDisplay()
+    {
+        // æŸ¥æ‰¾å½“å‰æš‚åœçš„æ§åˆ¶å™¨
+        RhythmKeyControllerBase pausedController = FindPausedController();
+        
+        if (successCountText != null)
+        {
+            if (pausedController != null)
+            {
+                int currentSuccess = controllerSuccessCounts[pausedController];
+                int requiredSuccess = GetRequiredSuccessCount(pausedController);
+                successCountText.text = $"{currentSuccess}/{requiredSuccess}";
+            }
+            else
+            {
+                successCountText.text = "0/4"; // é»˜è®¤æ˜¾ç¤º
+            }
+        }
+    }
+
+    /// <summary>
+    /// æŸ¥æ‰¾å½“å‰å¤„äºæš‚åœçŠ¶æ€çš„æ§åˆ¶å™¨
     /// </summary>
     private RhythmKeyControllerBase FindPausedController()
     {
         foreach (var controller in rhythmControllers)
         {
-            if (controller == null) continue;
-
-            if (IsControllerPaused(controller))
+            if (controller != null && IsControllerPaused(controller))
             {
                 return controller;
             }
@@ -87,103 +136,37 @@ public class PauseSuccessCounter : MonoBehaviour
     }
 
     /// <summary>
-    /// ¼ì²é¿ØÖÆÆ÷ÊÇ·ñ´¦ÓÚÔİÍ£×´Ì¬
-    /// </summary>
-    private bool IsControllerPaused(RhythmKeyControllerBase controller)
-    {
-        var fieldInfo = typeof(RhythmKeyControllerBase).GetField("isInPauseForFailure",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        if (fieldInfo != null)
-        {
-            return (bool)fieldInfo.GetValue(controller);
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// »ñÈ¡¿ØÖÆÆ÷µÄÁ¬Ğø³É¹¦´ÎÊı
-    /// </summary>
-    private int GetConsecutiveSuccessCount(RhythmKeyControllerBase controller)
-    {
-        var fieldInfo = typeof(RhythmKeyControllerBase).GetField("consecutiveSuccessOnFailedKey",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        if (fieldInfo != null)
-        {
-            return (int)fieldInfo.GetValue(controller);
-        }
-
-        return 0;
-    }
-
-    /// <summary>
-    /// »ñÈ¡»Ö¸´ËùĞèµÄ³É¹¦´ÎÊı
-    /// </summary>
-    private int GetRequiredSuccessCount(RhythmKeyControllerBase controller)
-    {
-        // needConsecutiveSuccessToResume ÊÇ¹«¿ª×Ö¶Î
-        return controller.needConsecutiveSuccessToResume;
-    }
-
-    /// <summary>
-    /// ¸üĞÂUIÏÔÊ¾
-    /// </summary>
-    private void UpdateDisplay()
-    {
-        if (successCountText != null)
-        {
-            if (currentPausedController != null && showMaxRequired)
-            {
-                successCountText.text = $"{displayPrefix}{currentSuccessCount}/{requiredSuccessCount}";
-            }
-            else if (currentPausedController != null)
-            {
-                successCountText.text = displayPrefix + currentSuccessCount;
-            }
-            else
-            {
-                successCountText.text = displayPrefix + "0";
-            }
-        }
-    }
-
-    /// <summary>
-    /// »ñÈ¡µ±Ç°Á¬Ğø³É¹¦´ÎÊı
-    /// </summary>
-    public int GetCurrentSuccessCount()
-    {
-        return currentSuccessCount;
-    }
-
-    /// <summary>
-    /// »ñÈ¡µ±Ç°ÔİÍ£µÄ¿ØÖÆÆ÷
-    /// </summary>
-    public RhythmKeyControllerBase GetCurrentPausedController()
-    {
-        return currentPausedController;
-    }
-
-    /// <summary>
-    /// ÊÖ¶¯Ìí¼Ó¿ØÖÆÆ÷
+    /// æ·»åŠ æ§åˆ¶å™¨åˆ°ç›‘æ§åˆ—è¡¨
     /// </summary>
     public void AddController(RhythmKeyControllerBase controller)
     {
         if (controller != null && !rhythmControllers.Contains(controller))
         {
             rhythmControllers.Add(controller);
+            controllerSuccessCounts[controller] = 0;
+            Debug.Log($"[PauseSuccessCounter] æ·»åŠ æ§åˆ¶å™¨: {controller.keyConfigPrefix}");
         }
     }
 
     /// <summary>
-    /// ÒÆ³ı¿ØÖÆÆ÷
+    /// ä»ç›‘æ§åˆ—è¡¨ç§»é™¤æ§åˆ¶å™¨
     /// </summary>
     public void RemoveController(RhythmKeyControllerBase controller)
     {
-        if (controller != null && rhythmControllers.Contains(controller))
+        if (rhythmControllers.Contains(controller))
         {
             rhythmControllers.Remove(controller);
+            controllerSuccessCounts.Remove(controller);
+            UpdateDisplay();
+            Debug.Log($"[PauseSuccessCounter] ç§»é™¤æ§åˆ¶å™¨: {controller.keyConfigPrefix}");
         }
+    }
+
+    /// <summary>
+    /// è·å–æŒ‡å®šæ§åˆ¶å™¨çš„æˆåŠŸæ¬¡æ•°
+    /// </summary>
+    public int GetControllerSuccessCount(RhythmKeyControllerBase controller)
+    {
+        return controllerSuccessCounts.ContainsKey(controller) ? controllerSuccessCounts[controller] : 0;
     }
 }

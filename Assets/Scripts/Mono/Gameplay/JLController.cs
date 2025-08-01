@@ -5,6 +5,7 @@ public class JLController : RhythmKeyControllerBase
 {
     public UnityEvent onJLKeyFailed;
     public PauseManager pauseManager;
+    
     void Reset()
     {
         keyConfig.primaryKey = KeyCode.J;
@@ -15,6 +16,8 @@ public class JLController : RhythmKeyControllerBase
     protected override void OnBeatFailed()
     {
         pauseManager.scriptsToPause.Remove(this);
+        base.OnBeatFailed();
+        
         onJLKeyFailed.Invoke();
     }
 }

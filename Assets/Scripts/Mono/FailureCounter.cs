@@ -1,99 +1,127 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 
 /// <summary>
-/// Í³¼ÆÓÎÏ·ÖĞÎ´ÔİÍ£Ê±µÄÊ§°Ü´ÎÊı
+/// ç»Ÿè®¡æ¸¸æˆä¸­æœªæš‚åœæ—¶çš„å¤±è´¥æ¬¡æ•°
 /// </summary>
 public class FailureCounter : MonoBehaviour
 {
-    [Header("UIÏÔÊ¾")]
-    [SerializeField] private Text failureCountText;
-    [SerializeField] private string displayPrefix = "Ê§°Ü´ÎÊı: ";
-
-    [Header("¿ØÖÆÆ÷ÒıÓÃ")]
-    [SerializeField] private List<RhythmKeyControllerBase> rhythmControllers = new List<RhythmKeyControllerBase>();
+    [Header("UI")]
+    
+    [SerializeField] private TextMeshProUGUI adFailureCountText;  // ADæ§åˆ¶å™¨å¤±è´¥è®¡æ•°
+    [SerializeField] private TextMeshProUGUI jlFailureCountText;  // JLæ§åˆ¶å™¨å¤±è´¥è®¡æ•°
 
     private int totalFailureCount = 0;
-    private Dictionary<RhythmKeyControllerBase, bool> controllerPauseStates = new Dictionary<RhythmKeyControllerBase, bool>();
+    
+    [Header("èŠ‚æ‹æ§åˆ¶å™¨")]
+    [SerializeField] private List<RhythmKeyControllerBase> rhythmControllers = new List<RhythmKeyControllerBase>();
+
+    // å­˜å‚¨æ¯ä¸ªæ§åˆ¶å™¨çš„å¤±è´¥æ¬¡æ•°
+    private Dictionary<RhythmKeyControllerBase, int> controllerFailureCounts = new Dictionary<RhythmKeyControllerBase, int>();
+    
+    // å­˜å‚¨æ¯ä¸ªæ§åˆ¶å™¨ä¸Šä¸€å¸§çš„æš‚åœçŠ¶æ€
+    private bool[] lastPausedStates;
 
     void Start()
     {
-        // ³õÊ¼»¯¿ØÖÆÆ÷×´Ì¬
-        foreach (var controller in rhythmControllers)
+        // åˆå§‹åŒ–æ§åˆ¶å™¨çŠ¶æ€
+        lastPausedStates = new bool[rhythmControllers.Count];
+        
+        for (int i = 0; i < rhythmControllers.Count; i++)
         {
+            var controller = rhythmControllers[i];
             if (controller != null)
             {
-                controllerPauseStates[controller] = false;
+                controllerFailureCounts[controller] = 0;
+                lastPausedStates[i] = controller.isPaused; // è®°å½•åˆå§‹çŠ¶æ€
+                Debug.Log($"[FailureCounter] åˆå§‹åŒ–æ§åˆ¶å™¨: {controller.keyConfigPrefix}");
             }
         }
 
         UpdateDisplay();
     }
 
-    void Update()
+    private void Update()
     {
-        // ¼àÌıÃ¿¸ö¿ØÖÆÆ÷µÄÊ§°ÜºÍÔİÍ£×´Ì¬
-        foreach (var controller in rhythmControllers)
+        for (int i = 0; i < rhythmControllers.Count; i++)
         {
-            if (controller == null) continue;
-
-            // »ñÈ¡µ±Ç°¿ØÖÆÆ÷µÄÔİÍ£×´Ì¬
-            bool currentlyPaused = IsControllerPaused(controller);
-
-            // ¼ì²éÊÇ·ñ´Ó·ÇÔİÍ£×´Ì¬±äÎªÔİÍ£×´Ì¬£¨±íÊ¾·¢ÉúÁËÊ§°Ü£©
-            if (!controllerPauseStates[controller] && currentlyPaused)
+            var controller = rhythmControllers[i];
+            if (controller != null)
             {
-                // Ê§°Ü·¢Éú£¬Ôö¼Ó¼ÆÊı
-                totalFailureCount++;
-                UpdateDisplay();
-                Debug.Log($"[FailureCounter] {controller.keyConfigPrefix} Ê§°Ü£¬×ÜÊ§°Ü´ÎÊı: {totalFailureCount}");
+                bool currentPaused = controller.isPaused;
+                bool lastPaused = lastPausedStates[i];
+
+                // æ£€æµ‹ä»æœªæš‚åœå˜ä¸ºæš‚åœï¼ˆå³å‘ç”Ÿå¤±è´¥ï¼‰
+                if (!lastPaused && currentPaused)
+                {
+                    CountingFailure(controller);
+                }
+
+                // æ›´æ–°çŠ¶æ€
+                lastPausedStates[i] = currentPaused;
             }
-
-            // ¸üĞÂ×´Ì¬
-            controllerPauseStates[controller] = currentlyPaused;
         }
     }
 
-    /// <summary>
-    /// ¼ì²é¿ØÖÆÆ÷ÊÇ·ñ´¦ÓÚÔİÍ£×´Ì¬
-    /// </summary>
-    private bool IsControllerPaused(RhythmKeyControllerBase controller)
+    void CountingFailure(RhythmKeyControllerBase controller)
     {
-        // Í¨¹ı·´Éä»ñÈ¡Ë½ÓĞ×Ö¶Î isInPauseForFailure
-        var fieldInfo = typeof(RhythmKeyControllerBase).GetField("isInPauseForFailure",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        // å¢åŠ è¯¥æ§åˆ¶å™¨çš„å¤±è´¥è®¡æ•°
+        controllerFailureCounts[controller]++;
+        totalFailureCount++;
 
-        if (fieldInfo != null)
-        {
-            return (bool)fieldInfo.GetValue(controller);
-        }
-
-        return false;
+        Debug.Log($"[FailureCounter] {controller.keyConfigPrefix} å¤±è´¥ï¼å½“å‰å¤±è´¥æ¬¡æ•°: {controllerFailureCounts[controller]}");
+        UpdateDisplay();
     }
 
-    /// <summary>
-    /// ¸üĞÂUIÏÔÊ¾
-    /// </summary>
     private void UpdateDisplay()
     {
-        if (failureCountText != null)
+        // æ›´æ–°æ€»å¤±è´¥æ¬¡æ•°
+       
+
+        // æ›´æ–°å„æ§åˆ¶å™¨çš„å¤±è´¥æ¬¡æ•°
+        for (int i = 0; i < rhythmControllers.Count; i++)
         {
-            failureCountText.text = displayPrefix + totalFailureCount;
+            var controller = rhythmControllers[i];
+            if (controller == null) continue;
+
+            int failureCount = controllerFailureCounts[controller];
+
+            // æ ¹æ®æ§åˆ¶å™¨ç±»å‹æ›´æ–°å¯¹åº”çš„UI
+            if (controller.keyConfigPrefix == "AD" && adFailureCountText != null)
+            {
+                adFailureCountText.text = $"AD: {failureCount}";
+            }
+            else if (controller.keyConfigPrefix == "JL" && jlFailureCountText != null)
+            {
+                jlFailureCountText.text = $"JL: {failureCount}";
+            }
         }
     }
 
-    /// <summary>
-    /// ÖØÖÃÊ§°Ü¼ÆÊı
-    /// </summary>
     public void ResetCount()
     {
         totalFailureCount = 0;
+
+        // é‡ç½®æ¯ä¸ªæ§åˆ¶å™¨çš„å¤±è´¥è®¡æ•°
+        for (int i = 0; i < rhythmControllers.Count; i++)
+        {
+            var controller = rhythmControllers[i];
+            if (controller != null)
+            {
+                controllerFailureCounts[controller] = 0;
+            }
+        }
+
         UpdateDisplay();
+        Debug.Log("[FailureCounter] é‡ç½®æ‰€æœ‰å¤±è´¥è®¡æ•°");
     }
 
     /// <summary>
-    /// »ñÈ¡µ±Ç°Ê§°Ü´ÎÊı
+    /// è·å–æ€»å¤±è´¥æ¬¡æ•°
     /// </summary>
     public int GetFailureCount()
     {
@@ -101,26 +129,40 @@ public class FailureCounter : MonoBehaviour
     }
 
     /// <summary>
-    /// ÊÖ¶¯Ìí¼Ó¿ØÖÆÆ÷
+    /// è·å–æŒ‡å®šæ§åˆ¶å™¨çš„å¤±è´¥æ¬¡æ•°
     /// </summary>
-    public void AddController(RhythmKeyControllerBase controller)
+    public int GetControllerFailureCount(RhythmKeyControllerBase controller)
     {
-        if (controller != null && !rhythmControllers.Contains(controller))
-        {
-            rhythmControllers.Add(controller);
-            controllerPauseStates[controller] = false;
-        }
+        return controllerFailureCounts.ContainsKey(controller) ? controllerFailureCounts[controller] : 0;
     }
 
     /// <summary>
-    /// ÒÆ³ı¿ØÖÆÆ÷
+    /// è·å–ADæ§åˆ¶å™¨å¤±è´¥æ¬¡æ•°
     /// </summary>
-    public void RemoveController(RhythmKeyControllerBase controller)
+    public int GetADFailureCount()
     {
-        if (controller != null && rhythmControllers.Contains(controller))
+        foreach (var controller in rhythmControllers)
         {
-            rhythmControllers.Remove(controller);
-            controllerPauseStates.Remove(controller);
+            if (controller != null && controller.keyConfigPrefix == "AD")
+            {
+                return controllerFailureCounts[controller];
+            }
         }
+        return 0;
+    }
+
+    /// <summary>
+    /// è·å–JLæ§åˆ¶å™¨å¤±è´¥æ¬¡æ•°
+    /// </summary>
+    public int GetJLFailureCount()
+    {
+        foreach (var controller in rhythmControllers)
+        {
+            if (controller != null && controller.keyConfigPrefix == "JL")
+            {
+                return controllerFailureCounts[controller];
+            }
+        }
+        return 0;
     }
 }
