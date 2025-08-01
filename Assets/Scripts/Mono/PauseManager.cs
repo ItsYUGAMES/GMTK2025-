@@ -3,53 +3,52 @@ using System.Collections.Generic;
 
 public class PauseManager : MonoBehaviour
 {
-    public static PauseManager Instance { get; private set; }
-    public bool IsPaused { get; private set; } = false;
+    [SerializeField]
+    [Tooltip("将所有需要暂停的脚本拖拽到这个列表中。")]
+    public List<MonoBehaviour> scriptsToPause = new List<MonoBehaviour>();
 
-    // 所有注册的可暂停脚本
-    private readonly List<IPausable> pausableScripts = new List<IPausable>();
+    // 追踪游戏是否处于暂停状态
+    private bool isPaused = false;
 
-    private void Awake()
+    /// <summary>
+    /// 暂停游戏，禁用所有列表中的脚本。
+    /// </summary>
+    public void PauseGame()
     {
-        if (Instance != null && Instance != this)
+        if (isPaused) return; // 如果已经暂停，则不再执行
+
+        foreach (var script in scriptsToPause)
         {
-            Destroy(gameObject);
-            return;
+            if (script != null)
+            {
+                script.enabled = false;
+            }
         }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    // 注册
-    public void Register(IPausable script)
-    {
-        if (!pausableScripts.Contains(script))
-            pausableScripts.Add(script);
-    }
-
-    // 注销
-    public void Unregister(IPausable script)
-    {
-        pausableScripts.Remove(script);
+        isPaused = true;
+        Debug.Log("Game Paused");
     }
 
     /// <summary>
-    /// 全局暂停，exempt为豁免对象（只解锁这一个，其它都暂停）
-    /// exempt=null时为全体暂停或全体恢复
+    /// 恢复游戏，启用所有列表中的脚本。
     /// </summary>
-    public void SetPause(bool pause, IPausable exempt = null)
+    public void ResumeGame()
     {
-        IsPaused = pause;
-        foreach (var script in pausableScripts)
+        if (!isPaused) return; // 如果没有暂停，则不再执行
+
+        foreach (var script in scriptsToPause)
         {
-            if (!pause)
+            if (script != null)
             {
-                script.SetPaused(false); // 全体恢复
-            }
-            else
-            {
-                script.SetPaused(script != exempt); // 只豁免exempt
+                script.enabled = true;
             }
         }
+        isPaused = false;
+        Debug.Log("Game Resumed");
+    }
+
+    // 示例：按下空格键来暂停/恢复游戏
+    void Update()
+    {
+        
     }
 }

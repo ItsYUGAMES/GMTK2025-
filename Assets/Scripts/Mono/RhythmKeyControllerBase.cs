@@ -3,47 +3,49 @@ using System;
 using System.Collections;
 
 /// <summary>
-/// ½Ú×à¿ØÖÆ»ùÀà£¬ÊµÏÖIPausable½Ó¿Ú£¬Ö§³ÖPauseManagerÈ«¾Ö/¾Ö²¿ÔİÍ£»úÖÆ
+/// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ»ï¿½ï¿½à£¬Êµï¿½ï¿½IPausableï¿½Ó¿Ú£ï¿½Ö§ï¿½ï¿½PauseManagerÈ«ï¿½ï¿½/ï¿½Ö²ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½
 /// </summary>
-public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
+public abstract class RhythmKeyControllerBase : MonoBehaviour
 {
-    [Header("¼üÎ»ÅäÖÃ")]
+    [Header("ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½")]
     public KeyConfig keyConfig = new KeyConfig();
     public string keyConfigPrefix = "Player";
 
-    [Header("PrefabÅäÖÃ")]
+    [Header("Prefabï¿½ï¿½ï¿½ï¿½")]
     public GameObject primaryKeyPrefab;
     public GameObject secondaryKeyPrefab;
     public Vector3 primaryKeySpawnPosition;
     public Vector3 secondaryKeySpawnPosition;
 
-    [Header("ÊÓ¾õ²ÎÊı")]
+    [Header("ï¿½Ó¾ï¿½ï¿½ï¿½ï¿½ï¿½")]
     public Color normalKeyColor = Color.gray;
     public Color highlightKeyColor = Color.white;
     public Color successKeyColor = Color.green;
     public Color missKeyColor = Color.red;
     public float feedbackDisplayDuration = 0.2f;
 
-    [Header("½Ú×à²ÎÊı")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")]
     public float beatInterval = 1.0f;
     public float successWindow = 0.4f;
     public bool infiniteLoop = true;
 
-    [Header("¹Ø¿¨/½á¾ÖÉèÖÃ")]
+    // ä¿®æ”¹å­—æ®µå£°æ˜éƒ¨åˆ†
+    [Header("å…³å¡/å¤±è´¥è®¾ç½®")]
     public int successToPass = 10;
     public int failToLose = 5;
     public int needConsecutiveSuccessToResume = 4;
 
-    // ×´Ì¬Çø
+
+    // ×´Ì¬ï¿½ï¿½
     protected int successCount = 0;
     protected int failCount = 0;
     protected bool isGameEnded = false;
     protected bool isInPauseForFailure = false;
-    protected bool pausedByManager = false;   // ±»PauseManagerÔİÍ£
+    protected bool pausedByManager = false;   // ï¿½ï¿½PauseManagerï¿½ï¿½Í£
     protected KeyCode lastFailedKey;
     protected int consecutiveSuccessOnFailedKey = 0;
 
-    // ÔËĞĞÊ±
+    // ï¿½ï¿½ï¿½ï¿½Ê±
     protected SpriteRenderer primaryKeySpriteRenderer;
     protected SpriteRenderer secondaryKeySpriteRenderer;
     protected Camera mainCamera;
@@ -61,11 +63,10 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
 
     public Action OnLevelPassed;
 
-    // ========== ÉúÃüÖÜÆÚ ==========
+    // ========== ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ==========
     protected virtual void Awake()
     {
-        PauseManager.Instance?.Register(this);
-
+        
         keyConfig.Load(keyConfigPrefix);
 
         mainCamera = Camera.main ?? FindObjectOfType<Camera>();
@@ -90,7 +91,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
 
     protected virtual void OnDestroy()
     {
-        PauseManager.Instance?.Unregister(this);
+        
     }
 
     protected virtual void Start()
@@ -99,21 +100,21 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
         StartNextBeat();
     }
 
-    // ========== IPausableÊµÏÖ ==========
+    // ========== IPausableÊµï¿½ï¿½ ==========
     public void SetPaused(bool paused)
     {
         pausedByManager = paused;
-        // ÈçĞè¶¯»­Í¬²½¶³½á£¬¿ÉÔÚÕâÀï´¦Àí allAnimators
+        // ï¿½ï¿½ï¿½è¶¯ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½á£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï´¦ï¿½ï¿½ allAnimators
         if (paused)
             PauseAllAnimations();
         else
             ResumeAllAnimations();
     }
 
-    // ========== Ö÷Ñ­»· ==========
+    // ========== ï¿½ï¿½Ñ­ï¿½ï¿½ ==========
     protected virtual void Update()
     {
-        if (pausedByManager) return;         // ±»È«¾Ö»ò¾Ö²¿¶³½á
+        if (pausedByManager) return;         // ï¿½ï¿½È«ï¿½Ö»ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½
         if (isGameEnded) return;
 
         if (isInPauseForFailure)
@@ -126,7 +127,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
         HandlePlayerInput();
     }
 
-    // ========== Íæ¼ÒÊäÈë ==========
+    // ========== ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ==========
     protected virtual void HandlePlayerInput()
     {
         if (isGameEnded || isInPauseForFailure) return;
@@ -143,7 +144,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
         {
             consecutiveSuccessOnFailedKey++;
             ShowFeedback(lastFailedKey, successKeyColor);
-            Debug.Log($"ÔİÍ£»Ö¸´½ø¶È: {consecutiveSuccessOnFailedKey}/{needConsecutiveSuccessToResume}");
+            Debug.Log($"ï¿½ï¿½Í£ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½: {consecutiveSuccessOnFailedKey}/{needConsecutiveSuccessToResume}");
 
             if (consecutiveSuccessOnFailedKey >= needConsecutiveSuccessToResume)
                 ResumeFromPause();
@@ -155,7 +156,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
             {
                 consecutiveSuccessOnFailedKey = 0;
                 ShowFeedback(otherKey, missKeyColor);
-                Debug.Log("°´´í¼ü£¬ÖØÖÃ»Ö¸´½ø¶È");
+                Debug.Log("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½");
             }
         }
     }
@@ -166,7 +167,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
         return Input.GetKeyDown(otherKey);
     }
 
-    // ========== ½Ú×àÂß¼­ ==========
+    // ========== ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ ==========
     protected virtual void StartNextBeat()
     {
         if (isInPauseForFailure) return;
@@ -230,8 +231,8 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
 
         EnterPauseForFailure();
 
-        // ===== Ö»»íÃâµ±Ç°£¬¶³½áÆäËü =====
-        PauseManager.Instance?.SetPause(true, this);
+        // ===== Ö»ï¿½ï¿½ï¿½âµ±Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ =====
+       
 
         if (failCount >= failToLose)
         {
@@ -254,7 +255,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
 
         PauseAllAnimations();
         SetKeyColor(lastFailedKey, missKeyColor);
-        Debug.Log($"[{keyConfigPrefix}] ½øÈëÔİÍ£×´Ì¬£¬ĞèÒªÁ¬Ğø°´ {lastFailedKey} ¼ü {needConsecutiveSuccessToResume} ´Î»Ö¸´");
+        Debug.Log($"[{keyConfigPrefix}] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£×´Ì¬ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ {lastFailedKey} ï¿½ï¿½ {needConsecutiveSuccessToResume} ï¿½Î»Ö¸ï¿½");
     }
 
     protected virtual void ResumeFromPause()
@@ -264,8 +265,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
         ResumeAllAnimations();
         SetAllKeysColor(normalKeyColor);
 
-        // ==== »Ö¸´È«²¿ ====
-        PauseManager.Instance?.SetPause(false);
+        // ==== ï¿½Ö¸ï¿½È«ï¿½ï¿½ ====
 
         if (beatCoroutine != null) StopCoroutine(beatCoroutine);
         beatCoroutine = StartCoroutine(WaitForNextBeat());
@@ -296,13 +296,13 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
 
     protected virtual void OnGameSuccess()
     {
-        Debug.Log($"[{keyConfigPrefix}] Í¨¹Ø³É¹¦£¡");
+        Debug.Log($"[{keyConfigPrefix}] Í¨ï¿½Ø³É¹ï¿½ï¿½ï¿½");
         OnLevelPassed?.Invoke();
     }
 
     protected virtual void OnGameFail()
     {
-        Debug.Log($"[{keyConfigPrefix}] ÓÎÏ·Ê§°Ü£¡");
+        Debug.Log($"[{keyConfigPrefix}] ï¿½ï¿½Ï·Ê§ï¿½Ü£ï¿½");
     }
 
     protected virtual IEnumerator WaitForNextBeat()
@@ -313,7 +313,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour, IPausable
         if (infiniteLoop && !isInPauseForFailure) StartNextBeat();
     }
 
-    // ========== ÊÓ¾õ·´À¡Ïà¹Ø ==========
+    // ========== ï¿½Ó¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ==========
     protected void ShowFeedback(KeyCode key, Color color)
     {
         if (key == keyConfig.primaryKey)

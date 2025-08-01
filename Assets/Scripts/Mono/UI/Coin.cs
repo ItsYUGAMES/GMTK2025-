@@ -48,8 +48,7 @@ public class Coin : MonoBehaviour
     {
         // 检查游戏是否暂停
         // 修改：使用正确的属性名 IsPaused 而不是 IsGamePaused()
-        if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
-            return;
+      
 
         // 检查金币是否掉出屏幕
         if (!isDestroyed && ShouldDestroy())
