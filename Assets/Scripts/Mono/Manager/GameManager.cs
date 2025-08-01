@@ -14,7 +14,21 @@ public class GameManager : MonoBehaviour
 
     public static GameManager instance;
     private int currentLevel = 1; // 当前关卡，基于场景位置
+    [Header("游戏模式")]
+    public bool isSingleMode = false; // 是否为Single模式
 
+// 设置Single模式
+    public void SetSingleMode(bool enabled)
+    {
+        isSingleMode = enabled;
+        Debug.Log($"游戏模式设置为: {(enabled ? "Single" : "HotSeat")}");
+    }
+
+// 获取当前游戏模式
+    public bool IsSingleMode()
+    {
+        return isSingleMode;
+    }
     void Awake()
     {
         if (instance == null)
@@ -111,5 +125,16 @@ public class GameManager : MonoBehaviour
             return levelScenes[currentLevel - 1];
         }
         return "";
+    }
+
+    // 更新游戏开始方法
+    public void GameStart_Single()
+    {
+        SetSingleMode(true);
+    }
+
+    public void GameStart_HotSeat()
+    {
+        SetSingleMode(false);
     }
 }
