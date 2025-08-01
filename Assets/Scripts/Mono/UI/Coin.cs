@@ -66,10 +66,10 @@ public class Coin : MonoBehaviour
         {
             Vector3 mousePosition = Input.mousePosition;
             Ray ray = mainCamera.ScreenPointToRay(mousePosition);
-        
+
             // 使用射线检测2D碰撞器
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-        
+
             if (hit.collider != null && hit.collider.gameObject == gameObject)
             {
                 CollectCoin();
@@ -84,11 +84,10 @@ public class Coin : MonoBehaviour
         isCollected = true;
         Debug.Log($"玩家点击收集硬币，获得 {coinValue} 金币");
 
-        // 增加玩家金币
-        ShopManager shopManager = FindObjectOfType<ShopManager>();
-        if (shopManager != null)
+        // 使用PlayerDataManager增加金币
+        if (PlayerDataManager.Instance != null)
         {
-            shopManager.AddPlayerGold(coinValue);
+            PlayerDataManager.Instance.AddPlayerGold(coinValue);
         }
 
         DestroyCoin();
