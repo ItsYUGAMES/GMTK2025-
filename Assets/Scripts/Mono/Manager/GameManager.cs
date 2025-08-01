@@ -1,45 +1,115 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[System.Serializable]
-public class RhythmControllerEntry
-{
-    public RhythmKeyControllerBase controller;
-    public float startDelay = 0f;
-}
-
 public class GameManager : MonoBehaviour
 {
-    [Header("节奏控制器配置")]
-    public List<RhythmControllerEntry> rhythmControllers;
+    [Header("关卡设置")]
+    public List<string> levelScenes = new List<string>(); // 关卡场景名列表
 
-    /// <summary>
-    /// 切换到游戏场景
-    /// </summary>
-    public void GameStart()
+    [Header("进度条设置")]
+    public ProgressBarController progressBar; // 进度条引用
+
+    public static GameManager instance;
+    private int currentLevel = 1; // 当前关卡，基于场景位置
+
+    void Awake()
     {
-        SceneManager.LoadScene("GamePlay"); // 替换为你的游戏场景名称
-    }
-
-    // ... 原有的场景切换方法...
-
-    public void StartAllRhythmControllers()
-    {
-        foreach (var entry in rhythmControllers)
+        if (instance == null)
         {
-            StartCoroutine(StartControllerWithDelay(entry));
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
         }
     }
 
-    private IEnumerator StartControllerWithDelay(RhythmControllerEntry entry)
+    void Start()
     {
-        yield return new WaitForSeconds(entry.startDelay);
-        if (entry.controller != null)
+        CheckGameplayScene();
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        CheckGameplayScene();
+    }
+
+    // 根据当前场景名更新关卡
+    private void UpdateLevelFromCurrentScene()
+    {
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        int sceneIndex = levelScenes.IndexOf(currentSceneName);
+
+        if (sceneIndex >= 0)
         {
-            entry.controller.StartRhythm();
-            Debug.Log($"已启动控制器：{entry.controller.name}，延迟：{entry.startDelay}s");
+            currentLevel = sceneIndex + 1; // 直接设置内存中的关卡号
+            Debug.Log($"从场景列表获取关卡: {currentSceneName}, 关卡号: {currentLevel}");
         }
+        else
+        {
+            Debug.LogWarning($"场景 {currentSceneName} 不在关卡列表中");
+        }
+    }
+
+    // 检查是否为gameplay场景
+    public bool CheckGameplayScene()
+    {
+        string currentSceneName = SceneManager.GetActiveScene().name.ToLower();
+
+        // 更新关卡信息
+        UpdateLevelFromCurrentScene();
+
+        if (currentSceneName == "gameplay")
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    // 进入下一关
+    public void NextLevel()
+    {
+        if (currentLevel < levelScenes.Count)
+        {
+            int nextLevel = currentLevel + 1;
+            string nextSceneName = levelScenes[nextLevel - 1];
+            Debug.Log($"进入第 {nextLevel} 关: {nextSceneName}");
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            Debug.Log("已达到最高关卡！");
+        }
+    }
+
+    // 获取当前关卡
+    public int GetCurrentLevel()
+    {
+        return currentLevel;
+    }
+
+    // 获取当前关卡对应的场景名
+    public string GetCurrentLevelScene()
+    {
+        if (currentLevel > 0 && currentLevel <= levelScenes.Count)
+        {
+            return levelScenes[currentLevel - 1];
+        }
+        return "";
     }
 }

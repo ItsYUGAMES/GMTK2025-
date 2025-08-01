@@ -290,7 +290,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a49a5e75d82d8b40abde1e02f0f11d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rhythmControllers: []
+  levelScenes:
+  - GameStart
+  - Cutscene
+  - Level1
+  - Level2
 --- !u!114 &104757647
 MonoBehaviour:
   m_ObjectHideFlags: 0

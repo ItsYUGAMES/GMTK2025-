@@ -27,6 +27,7 @@ public class ProgressBarController : MonoBehaviour
     private Camera mainCamera; // 引用主摄像机
     private int activeCoinsCount = 0; // 追踪活跃的硬币数量
 
+    public GameManager gameManager;
     void Awake() // 使用 Awake 来获取摄像机引用，确保在 Start 之前可用
     {
         mainCamera = Camera.main; // 获取主摄像机引用
@@ -179,7 +180,7 @@ public class ProgressBarController : MonoBehaviour
         if (activeCoinsCount <= 0)
         {
             Debug.Log("所有硬币已收集完毕，打开商店！");
-            if (shopManager != null)
+            if (shopManager != null&& gameManager.CheckGameplayScene())
             {
                 shopManager.OpenShop();
             }
