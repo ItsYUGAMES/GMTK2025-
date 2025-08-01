@@ -327,7 +327,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     }
 
     // ========== �Ӿ�������� ==========
-    protected void ShowFeedback(KeyCode key, Color color)
+    protected virtual void ShowFeedback(KeyCode key, Color color)
     {
         if (key == keyConfig.primaryKey)
         {
@@ -386,7 +386,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         return null;
     }
 
-    protected void SetKeyColor(KeyCode key, Color color)
+    protected virtual void SetKeyColor(KeyCode key, Color color)
     {
         SpriteRenderer renderer = GetKeyRenderer(key);
         if (renderer != null)

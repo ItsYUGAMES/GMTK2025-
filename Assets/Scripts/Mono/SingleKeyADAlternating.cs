@@ -10,11 +10,11 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
     void Reset()
     {
         keyConfig.primaryKey = KeyCode.A;
-        keyConfig.secondaryKey = KeyCode.D;  // ´_±£DæIÒ²ÓĞÔO¶¨
+        keyConfig.secondaryKey = KeyCode.D;
         keyConfigPrefix = "AD";
     }
 
-    // Ö»ÓÃAæIÓ|°lÅĞ¶¨
+    // åªæ£€æµ‹Aé”®è¾“å…¥
     protected override void HandlePlayerInput()
     {
         if (isGameEnded) return;
@@ -22,21 +22,22 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
             OnKeyPressed(keyConfig.primaryKey);
     }
 
-    // ¸ù“şÆÚÍûæI¸ßÁÁŒ¦‘ªÒ•ÓX
+    // é‡å†™StartNextBeatï¼šåªä½¿ç”¨ä¸»é”®prefabï¼Œä½†æœŸæœ›é”®ä»ç„¶äº¤æ›¿
     protected override void StartNextBeat()
     {
         if (pausedByManager) return;
-
-        expectedKey = (beatCounter % 2 == 0) ? KeyCode.A : KeyCode.D;
+        
+        Debug.Log("NextBeat");
+        expectedKey = (beatCounter % 2 == 0) ? keyConfig.primaryKey : keyConfig.secondaryKey;
         currentBeatStartTime = Time.time;
         waitingForInput = true;
-
-        // ¸ù“şexpectedKey¸ßÁÁŒ¦‘ªµÄÒ•ÓXÔªËØ
-        SetKeyColor(expectedKey, highlightKeyColor);
+        
+        // åªè®¾ç½®ä¸»é”®é¢œè‰²ï¼Œå› ä¸ºåªæœ‰ä¸€ä¸ªprefab
+        SetKeyColor(keyConfig.primaryKey, highlightKeyColor);
         beatCounter++;
     }
 
-    // ÖØŒ‘OnKeyPressed£¬×ŒAæIÄÜÆ¥ÅäA»òDµÄÆÚÍû
+    // é‡å†™OnKeyPressedï¼šAé”®è¾“å…¥åŒ¹é…Aæˆ–Déƒ½æˆåŠŸ
     protected override void OnKeyPressed(KeyCode pressedKey)
     {
         if (!waitingForInput)
@@ -46,14 +47,54 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
             return;
         }
 
-        // AæI¿‚ÊÇÓ|°l³É¹¦ÅĞ¶¨£¨ŸoÕ“ÆÚÍûÊÇAß€ÊÇD£©
+        // Aé”®è¾“å…¥æ—¶æ€»æ˜¯æˆåŠŸï¼Œæ— è®ºæœŸæœ›é”®æ˜¯Aè¿˜æ˜¯D
         if (pressedKey == keyConfig.primaryKey)
             OnBeatSuccess();
     }
 
+    // æ·»åŠ æˆåŠŸäº‹ä»¶è§¦å‘
+    protected override void OnBeatSuccess()
+    {
+        base.OnBeatSuccess();
+        onADKeySucceeded?.Invoke();
+    }
+
+    // å®Œå…¨æŒ‰ç…§ADControllerçš„æ¨¡å¼å¤„ç†å¤±è´¥
     protected override void OnBeatFailed()
     {
+        pauseManager.scriptsToPause.Remove(this);
         base.OnBeatFailed();
         onADKeyFailed?.Invoke();
+    }
+
+    // é‡å†™SetKeyColorï¼šåªå¤„ç†ä¸»é”®
+    protected override void SetKeyColor(KeyCode key, Color color)
+    {
+        // æ— è®ºæœŸæœ›é”®æ˜¯Aè¿˜æ˜¯Dï¼Œéƒ½åªè®¾ç½®ä¸»é”®çš„é¢œè‰²
+        if (primaryKeySpriteRenderer != null)
+        {
+            if (primaryKeyColorCoroutine != null)
+                StopCoroutine(primaryKeyColorCoroutine);
+
+            // æš‚åœçŠ¶æ€ä¸‹çš„ç‰¹æ®Šå¤„ç†
+            if (isPaused && key == lastFailedKey && color == normalKeyColor)
+            {
+                if (waitingForInput)
+                    primaryKeySpriteRenderer.color = highlightKeyColor;
+                else
+                    primaryKeySpriteRenderer.color = missKeyColor;
+            }
+            else
+            {
+                primaryKeySpriteRenderer.color = color;
+            }
+        }
+    }
+
+    // é‡å†™ShowFeedbackï¼šåªæ˜¾ç¤ºä¸»é”®åé¦ˆ
+    protected override void ShowFeedback(KeyCode key, Color color)
+    {
+        if (primaryKeyColorCoroutine != null) StopCoroutine(primaryKeyColorCoroutine);
+        primaryKeyColorCoroutine = StartCoroutine(ShowColorFeedback(primaryKeySpriteRenderer, color));
     }
 }
