@@ -65,11 +65,12 @@ public class Coin : MonoBehaviour
         if (Input.GetMouseButtonDown(0)) // 左键点击
         {
             Vector3 mousePosition = Input.mousePosition;
-            Vector3 worldPosition = mainCamera.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -mainCamera.transform.position.z));
-
-            // 检查点击位置是否在金币上
-            Collider2D collider = GetComponent<Collider2D>();
-            if (collider != null && collider.OverlapPoint(worldPosition))
+            Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+        
+            // 使用射线检测2D碰撞器
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+        
+            if (hit.collider != null && hit.collider.gameObject == gameObject)
             {
                 CollectCoin();
             }
