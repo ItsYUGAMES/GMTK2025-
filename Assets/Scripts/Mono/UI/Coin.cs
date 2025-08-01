@@ -19,6 +19,13 @@ public class Coin : MonoBehaviour
         {
             mainCamera = FindObjectOfType<Camera>();
         }
+
+        // 确保有碰撞器用于点击检测
+        Collider2D collider = GetComponent<Collider2D>();
+        if (collider == null)
+        {
+            collider = gameObject.AddComponent<CircleCollider2D>();
+        }
     }
 
     private void Start()
@@ -39,10 +46,33 @@ public class Coin : MonoBehaviour
 
     private void Update()
     {
+        // 检查游戏是否暂停
+        if (GamePauseManager.Instance != null && GamePauseManager.Instance.IsGamePaused())
+            return;
+
         // 检查金币是否掉出屏幕
         if (!isDestroyed && ShouldDestroy())
         {
             DestroyCoin();
+        }
+
+        // 检测鼠标点击
+        HandleMouseInput();
+    }
+
+    private void HandleMouseInput()
+    {
+        if (Input.GetMouseButtonDown(0)) // 左键点击
+        {
+            Vector3 mousePosition = Input.mousePosition;
+            Vector3 worldPosition = mainCamera.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -mainCamera.transform.position.z));
+
+            // 检查点击位置是否在金币上
+            Collider2D collider = GetComponent<Collider2D>();
+            if (collider != null && collider.OverlapPoint(worldPosition))
+            {
+                CollectCoin();
+            }
         }
     }
 
@@ -51,7 +81,7 @@ public class Coin : MonoBehaviour
         if (isCollected || isDestroyed) return;
 
         isCollected = true;
-        Debug.Log($"玩家收集硬币，获得 {coinValue} 金币");
+        Debug.Log($"玩家点击收集硬币，获得 {coinValue} 金币");
 
         // 增加玩家金币
         ShopManager shopManager = FindObjectOfType<ShopManager>();
@@ -103,4 +133,4 @@ public class Coin : MonoBehaviour
             onDestroyCallback.Invoke();
         }
     }
-}   
+}
