@@ -47,7 +47,8 @@ public class Coin : MonoBehaviour
     private void Update()
     {
         // 检查游戏是否暂停
-        if (GamePauseManager.Instance != null && GamePauseManager.Instance.IsGamePaused())
+        // 修改：使用正确的属性名 IsPaused 而不是 IsGamePaused()
+        if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
             return;
 
         // 检查金币是否掉出屏幕
