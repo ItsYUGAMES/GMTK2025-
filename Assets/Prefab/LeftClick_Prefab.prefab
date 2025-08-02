@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6520148233816511627}
   - component: {fileID: 1335028839396722288}
   m_Layer: 0
-  m_Name: RightClick_Prefab
+  m_Name: LeftClick_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -73,7 +73,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 250a8df8f03fec14689ee892664b6878, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 654c66ed2551b4e4a91de9a71d62070d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

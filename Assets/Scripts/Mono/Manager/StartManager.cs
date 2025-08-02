@@ -12,24 +12,25 @@ public class StartManager : MonoBehaviour
     public int requiredSuccessCount = 4;
     public float beatInterval = 1.0f;
     public float successWindow = 0.4f; // 判定窗口期（秒）
-    
+
     [Header("游戏模式")]
     public bool isSingleKeyMode = false;
 
-    
     [Header("Prefab配置")]
     public GameObject primaryKeyPrefab;  // 主键prefab
     public GameObject secondaryKeyPrefab; // 副键prefab
     public Vector3 primaryKeyPosition = Vector3.zero;  // 主键实例化坐标
     public Vector3 secondaryKeyPosition = Vector3.zero; // 副键实例化坐标
-    [Header("视觉反馈")]
+
+    [Header("Sprite设置")]
+    public Sprite normalKeySprite;
+    public Sprite highlightKeySprite;
+    public Sprite successKeySprite;
+    public Sprite missKeySprite;  // 添加失败sprite
+    public float feedbackDisplayDuration = 0.2f;
+
     private SpriteRenderer primaryKeyRenderer;
     private SpriteRenderer secondaryKeyRenderer;
-    public Color normalColor = Color.white;
-    public Color highlightColor = Color.yellow;
-    public Color successColor = Color.green;
-
-    
     private int currentSuccessCount = 0;
     private bool isWaitingForInput = false;
     private bool isCompleted = false;
@@ -37,6 +38,7 @@ public class StartManager : MonoBehaviour
     private List<MonoBehaviour> pausedBehaviors = new List<MonoBehaviour>();
     private GameObject instantiatedPrimaryKey;
     private GameObject instantiatedSecondaryKey;
+    
     void Start()
     {
         // 根据GameManager获取游戏模式
@@ -46,7 +48,6 @@ public class StartManager : MonoBehaviour
         }
 
         InstantiateKeyPrefabs();
-    
         PauseAllOtherScripts();
         StartCoroutine(StartSequence());
     }
@@ -72,11 +73,11 @@ public class StartManager : MonoBehaviour
             }
         }
     }
-    
+
     private void InstantiateKeyPrefabs()
     {
         Quaternion rotation = Quaternion.identity;
-    
+
         if (isSingleKeyMode)
         {
             // 单键模式：只实例化主键
@@ -103,7 +104,6 @@ public class StartManager : MonoBehaviour
         }
     }
 
-
     private void PauseAllOtherScripts()
     {
         pausedBehaviors.Clear();
@@ -124,8 +124,6 @@ public class StartManager : MonoBehaviour
                     continue; // 其他 Canvas 组件跳过
                 }
             }
-            // if (!mb.enabled)
-            //     continue;
             pausedBehaviors.Add(mb);
             mb.enabled = false;
         }
@@ -159,18 +157,18 @@ public class StartManager : MonoBehaviour
 
     private IEnumerator WaitForBeat()
     {
-        // 设置所有按键为正常颜色
-        SetAllKeysColor(normalColor);
+        // 设置所有按键为正常sprite
+        SetAllKeysSprite(normalKeySprite);
 
         if (isSingleKeyMode)
         {
             // 单键模式：只高亮主键
-            SetKeyColor(primaryKey, highlightColor);
+            SetKeySprite(primaryKey, highlightKeySprite);
         }
         else
         {
             // 双键模式：高亮当前期望的按键
-            SetKeyColor(currentExpectedKey, highlightColor);
+            SetKeySprite(currentExpectedKey, highlightKeySprite);
         }
 
         float currentBeatStartTime = Time.time;
@@ -185,9 +183,12 @@ public class StartManager : MonoBehaviour
         }
 
         // 如果超时未按键，重置计数
+        // 如果超时未按键，重置计数
         if (isWaitingForInput)
         {
             OnBeatMissed();
+            // 等待失败反馈显示
+            yield return new WaitForSeconds(feedbackDisplayDuration);
         }
 
         isWaitingForInput = false;
@@ -197,20 +198,20 @@ public class StartManager : MonoBehaviour
         {
             if (isSingleKeyMode)
             {
-                SetKeyColor(primaryKey, successColor);
+                SetKeySprite(primaryKey, successKeySprite);
             }
             else
             {
-                SetKeyColor(currentExpectedKey, successColor);
+                SetKeySprite(currentExpectedKey, successKeySprite);
             }
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(feedbackDisplayDuration);
         }
 
-        // 恢复按键颜色
-        SetAllKeysColor(normalColor);
-    
+        // 恢复按键sprite
+        SetAllKeysSprite(normalKeySprite);
+
         // 等待剩余时间到下一个节拍
-        float remainingTime = beatInterval - successWindow - 0.1f;
+        float remainingTime = beatInterval - successWindow - feedbackDisplayDuration;
         if (remainingTime > 0)
         {
             yield return new WaitForSeconds(remainingTime);
@@ -233,22 +234,31 @@ public class StartManager : MonoBehaviour
         currentSuccessCount = 0;
         string mode = isSingleKeyMode ? "Single" : "Hotseat";
         Debug.Log($"{mode}模式 - 判定失败，重新开始");
+    
+        // 显示失败反馈
+        if (isSingleKeyMode)
+        {
+            SetKeySprite(primaryKey, missKeySprite);
+        }
+        else
+        {
+            SetKeySprite(currentExpectedKey, missKeySprite);
+        }
     }
-
-    private void SetKeyColor(KeyCode key, Color color)
+    private void SetKeySprite(KeyCode key, Sprite sprite)
     {
         if (key == primaryKey && primaryKeyRenderer != null)
-            primaryKeyRenderer.color = color;
+            primaryKeyRenderer.sprite = sprite;
         else if (key == secondaryKey && secondaryKeyRenderer != null)
-            secondaryKeyRenderer.color = color;
+            secondaryKeyRenderer.sprite = sprite;
     }
 
-    private void SetAllKeysColor(Color color)
+    private void SetAllKeysSprite(Sprite sprite)
     {
         if (primaryKeyRenderer != null)
-            primaryKeyRenderer.color = color;
+            primaryKeyRenderer.sprite = sprite;
         if (secondaryKeyRenderer != null)
-            secondaryKeyRenderer.color = color;
+            secondaryKeyRenderer.sprite = sprite;
     }
 
     private void OnSequenceCompleted()
@@ -263,7 +273,7 @@ public class StartManager : MonoBehaviour
             Destroy(instantiatedPrimaryKey);
             instantiatedPrimaryKey = null;
         }
-    
+
         if (instantiatedSecondaryKey != null)
         {
             Destroy(instantiatedSecondaryKey);
@@ -277,7 +287,5 @@ public class StartManager : MonoBehaviour
         {
             controller.StartRhythm();
         }
-        
-        
     }
 }
