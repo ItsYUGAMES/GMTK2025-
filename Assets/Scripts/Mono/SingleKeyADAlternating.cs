@@ -1,12 +1,14 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+
 public class SingleKeyADAlternating : RhythmKeyControllerBase
 {
     public UnityEvent onADKeyFailed;
     public UnityEvent onADKeySucceeded;
     public PauseManager pauseManager;
     public GameManager gameManager;
+
     void Reset()
     {
         keyConfig.primaryKey = KeyCode.A;
@@ -18,7 +20,7 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
     protected override void HandlePlayerInput()
     {
         if (isGameEnded) return;
-    
+
         if (isPaused)
         {
             // 暂停状态下的输入处理
@@ -43,14 +45,14 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
     protected override void StartNextBeat()
     {
         if (pausedByManager) return;
-        
+
         Debug.Log("NextBeat");
         expectedKey = (beatCounter % 2 == 0) ? keyConfig.primaryKey : keyConfig.secondaryKey;
         currentBeatStartTime = Time.time;
         waitingForInput = true;
-        
-        // 只设置主键颜色，因为只有一个prefab
-        SetKeyColor(keyConfig.primaryKey, highlightKeyColor);
+
+        // 只设置主键sprite，因为只有一个prefab
+        SetKeySprite(keyConfig.primaryKey, highlightKeySprite);
         beatCounter++;
     }
 
@@ -60,7 +62,7 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
         if (!waitingForInput)
         {
             if (pressedKey == keyConfig.primaryKey)
-                ShowFeedback(keyConfig.primaryKey, missKeyColor);
+                ShowFeedback(keyConfig.primaryKey, missKeySprite);
             return;
         }
 
@@ -90,36 +92,33 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
         SceneManager.LoadScene("Fail");
     }
 
-    // 重写SetKeyColor：只处理主键
-    // 修改 SetKeyColor 方法
-    protected override void SetKeyColor(KeyCode key, Color color)
+    // 重写SetKeySprite：只处理主键
+    protected override void SetKeySprite(KeyCode key, Sprite sprite)
     {
         if (primaryKeySpriteRenderer != null)
         {
-            if (primaryKeyColorCoroutine != null)
-                StopCoroutine(primaryKeyColorCoroutine);
+            if (primaryKeySpriteCoroutine != null)
+                StopCoroutine(primaryKeySpriteCoroutine);
 
             // 暂停状态下的特殊处理
-            if (isPaused && key == expectedKey && color == normalKeyColor)
+            if (isPaused && key == expectedKey && sprite == normalKeySprite)
             {
                 if (waitingForInput)
-                    primaryKeySpriteRenderer.color = highlightKeyColor;
+                    primaryKeySpriteRenderer.sprite = highlightKeySprite;
                 else
-                    primaryKeySpriteRenderer.color = missKeyColor;
+                    primaryKeySpriteRenderer.sprite = missKeySprite;
             }
             else
             {
-                primaryKeySpriteRenderer.color = color;
+                primaryKeySpriteRenderer.sprite = sprite;
             }
         }
     }
 
     // 重写ShowFeedback：只显示主键反馈
-    protected override void ShowFeedback(KeyCode key, Color color)
+    protected override void ShowFeedback(KeyCode key, Sprite sprite)
     {
-        if (primaryKeyColorCoroutine != null) StopCoroutine(primaryKeyColorCoroutine);
-        primaryKeyColorCoroutine = StartCoroutine(ShowColorFeedback(primaryKeySpriteRenderer, color));
+        if (primaryKeySpriteCoroutine != null) StopCoroutine(primaryKeySpriteCoroutine);
+        primaryKeySpriteCoroutine = StartCoroutine(ShowSpriteFeedback(primaryKeySpriteRenderer, sprite));
     }
-    
-    
 }

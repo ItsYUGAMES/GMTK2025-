@@ -267,7 +267,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 72078772}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f314fde494aa1a418274d44dbd92ef8, type: 3}
   m_Name: 
@@ -1260,7 +1260,7 @@ GameObject:
   - component: {fileID: 853545018}
   - component: {fileID: 853545017}
   m_Layer: 0
-  m_Name: A
+  m_Name: RightClick
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1273,7 +1273,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 853545016}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 61f51b8da598f4f4aa6db4d901a4f30a, type: 3}
   m_Name: 
@@ -1282,15 +1282,15 @@ MonoBehaviour:
     primaryKey: 97
     secondaryKey: 100
   keyConfigPrefix: AD
-  primaryKeyPrefab: {fileID: 2734891220909504897, guid: 544efce9aa0d9d64aa40037201288451, type: 3}
+  primaryKeyPrefab: {fileID: 5861302162887998563, guid: cbaff493b628b4c4b9ae25905b2cc3af, type: 3}
   secondaryKeyPrefab: {fileID: 0}
   primaryKeySpawnPosition: {x: -3, y: 0, z: 0}
   secondaryKeySpawnPosition: {x: 0, y: 0, z: 0}
-  normalKeyColor: {r: 1, g: 1, b: 1, a: 1}
-  highlightKeyColor: {r: 1, g: 0.9710716, b: 0, a: 1}
-  successKeyColor: {r: 0, g: 1, b: 0, a: 1}
-  missKeyColor: {r: 1, g: 0, b: 0, a: 1}
-  feedbackDisplayDuration: 0.2
+  normalKeySprite: {fileID: 21300000, guid: 654c66ed2551b4e4a91de9a71d62070d, type: 3}
+  highlightKeySprite: {fileID: 21300000, guid: ee6867011e2ee464293e953bf96f7e99, type: 3}
+  successKeySprite: {fileID: 21300000, guid: 654c66ed2551b4e4a91de9a71d62070d, type: 3}
+  missKeySprite: {fileID: 21300000, guid: a9f7efd3157eed64283c66b6958e9560, type: 3}
+  feedbackDisplayDuration: 0.4
   beatInterval: 1
   successWindow: 0.4
   infiniteLoop: 1

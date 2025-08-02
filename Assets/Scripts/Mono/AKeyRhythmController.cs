@@ -2,38 +2,38 @@ using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
-/// †ÎæI¹×à¿ØÖÆÆ÷£¬Ö»Ê¹ÓÃÒ»‚€°´æIßMĞĞ¹×à²Ù×÷
+/// ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö»Ê¹ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½Mï¿½Ğ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 /// </summary>
 public class SingleKeyController : RhythmKeyControllerBase
 {
-    [Header("†ÎæIÔOÖÃ")]
+    [Header("ï¿½ï¿½ï¿½Iï¿½Oï¿½ï¿½")]
     public KeyCode singleKey = KeyCode.A;
 
-    [Header("ÊÂ¼ş")]
+    [Header("ï¿½Â¼ï¿½")]
     public UnityEvent onSingleKeyFailed;
     public UnityEvent onSingleKeySuccess;
 
-    [Header("¹ÜÀíÆ÷ÒıÓÃ")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")]
     public PauseManager pauseManager;
 
     void Reset()
     {
-        // ÔOÖÃéÍ¬Ò»‚€°´æI£¬ß@˜Ó¹ÅÄÆ÷Ö»•şÊ¹ÓÃÒ»‚€æI
+        // ï¿½Oï¿½Ãï¿½Í¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½@ï¿½Ó¹ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Ê¹ï¿½ï¿½Ò»ï¿½ï¿½ï¿½I
         keyConfig.primaryKey = KeyCode.Space;
         keyConfig.secondaryKey = KeyCode.Space;
         keyConfigPrefix = "SingleKey";
 
-        // Õ{Õû†ÎæIÄ£Ê½µÄ…¢”µ
+        // ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½IÄ£Ê½ï¿½Ä…ï¿½ï¿½ï¿½
         beatInterval = 1.0f;
         successWindow = 0.4f;
-        successToPass = 15;  // †ÎæI¿ÉÄÜĞèÒª¸ü¶à³É¹¦´Î”µ
-        failToLose = 3;      // Ê§”¡ÈİÈÌ¶È¿ÉÒÔ½µµÍ
+        successToPass = 15;  // ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½Î”ï¿½
+        failToLose = 3;      // Ê§ï¿½ï¿½ï¿½ï¿½ï¿½Ì¶È¿ï¿½ï¿½Ô½ï¿½ï¿½ï¿½
         needConsecutiveSuccessToResume = 3;
     }
 
     protected override void Awake()
     {
-        // ´_±£ƒÉ‚€æI¶¼ÔOÖÃéÍ¬Ò»‚€æI
+        // ï¿½_ï¿½ï¿½ï¿½É‚ï¿½ï¿½Iï¿½ï¿½ï¿½Oï¿½Ãï¿½Í¬Ò»ï¿½ï¿½ï¿½I
         keyConfig.primaryKey = singleKey;
         keyConfig.secondaryKey = singleKey;
 
@@ -42,7 +42,7 @@ public class SingleKeyController : RhythmKeyControllerBase
 
     protected override void Start()
     {
-        // Ö»ĞèÒªÒ»‚€æIµÄÒ•ÓX·´ğ£¬ë[²ØµÚ¶ş‚€æI
+        // Ö»ï¿½ï¿½ÒªÒ»ï¿½ï¿½ï¿½Iï¿½ï¿½Ò•ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ØµÚ¶ï¿½ï¿½ï¿½ï¿½I
         if (secondaryKeySpriteRenderer != null)
         {
             secondaryKeySpriteRenderer.gameObject.SetActive(false);
@@ -55,7 +55,7 @@ public class SingleKeyController : RhythmKeyControllerBase
     {
         if (isGameEnded) return;
 
-        // Ö»±OÂ †ÎÒ»°´æI
+        // Ö»ï¿½OÂ ï¿½ï¿½Ò»ï¿½ï¿½ï¿½I
         if (Input.GetKeyDown(singleKey))
             OnKeyPressed(singleKey);
     }
@@ -64,15 +64,15 @@ public class SingleKeyController : RhythmKeyControllerBase
     {
         if (pausedByManager) return;
 
-        Debug.Log($"[{keyConfigPrefix}] ÏÂÒ»‚€¹ÅÄ - °´ {singleKey} æI");
+        Debug.Log($"[{keyConfigPrefix}] ä¸‹ä¸€ä¸ªèŠ‚æ‹ - æŒ‰ {singleKey} é”®");
 
-        // †ÎæIÄ£Ê½ÏÂ£¬Ã¿‚€¹ÅÄ¶¼ÊÇÍ¬Ò»‚€æI
+        // å•é”®æ¨¡å¼ä¸‹ï¼Œæ¯ä¸ªèŠ‚æ‹éƒ½æ˜¯åŒä¸€ä¸ªé”®
         expectedKey = singleKey;
         currentBeatStartTime = Time.time;
         waitingForInput = true;
 
-        // Ö»¸ßÁÁÖ÷æI
-        SetKeyColor(singleKey, highlightKeyColor);
+        // åªè®¾ç½®ä¸»é”®spriteï¼ˆä¸æ˜¯é¢œè‰²ï¼‰
+        SetKeySprite(singleKey, highlightKeySprite);
         beatCounter++;
     }
 
@@ -81,7 +81,7 @@ public class SingleKeyController : RhythmKeyControllerBase
         base.OnBeatSuccess();
         onSingleKeySuccess?.Invoke();
 
-        // ™z²éÊÇ·ñß_µ½Í¨êP—l¼ş
+        // ï¿½zï¿½ï¿½ï¿½Ç·ï¿½ï¿½_ï¿½ï¿½Í¨ï¿½Pï¿½lï¿½ï¿½
         if (successCount >= successToPass)
         {
             isGameEnded = true;
@@ -91,7 +91,7 @@ public class SingleKeyController : RhythmKeyControllerBase
 
     protected override void OnBeatFailed()
     {
-        // Èç¹ûÓĞ PauseManager£¬Ä•ºÍ£ÁĞ±íÖĞÒÆ³ı
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ PauseManagerï¿½ï¿½ï¿½Ä•ï¿½Í£ï¿½Ğ±ï¿½ï¿½ï¿½ï¿½Æ³ï¿½
         if (pauseManager != null)
         {
             pauseManager.scriptsToPause.Remove(this);
@@ -104,22 +104,22 @@ public class SingleKeyController : RhythmKeyControllerBase
     protected override void EnterPauseForFailure()
     {
         base.EnterPauseForFailure();
-        Debug.Log($"[{keyConfigPrefix}] †ÎæIÊ§”¡•ºÍ££¬ßBÀm°´ {singleKey} æI {needConsecutiveSuccessToResume} ´Î»ÖÍ");
+        Debug.Log($"[{keyConfigPrefix}] ï¿½ï¿½ï¿½IÊ§ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½Bï¿½mï¿½ï¿½ {singleKey} ï¿½I {needConsecutiveSuccessToResume} ï¿½Î»Öï¿½");
     }
 
     protected override void OnGameSuccess()
     {
         base.OnGameSuccess();
-        Debug.Log($"[{keyConfigPrefix}] †ÎæIÌô‘ğÍ¨êP£¡³É¹¦´Î”µ: {successCount}");
+        Debug.Log($"[{keyConfigPrefix}] ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½Í¨ï¿½Pï¿½ï¿½ï¿½É¹ï¿½ï¿½Î”ï¿½: {successCount}");
     }
 
     protected override void OnGameFail()
     {
         base.OnGameFail();
-        Debug.Log($"[{keyConfigPrefix}] †ÎæIÌô‘ğÊ§”¡£¡Ê§”¡´Î”µ: {failCount}");
+        Debug.Log($"[{keyConfigPrefix}] ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½ï¿½Î”ï¿½: {failCount}");
     }
 
-    // Ìá¹©·½·¨í„Ó‘B¸ü¸Ä†ÎæI
+    // ï¿½á¹©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó‘Bï¿½ï¿½ï¿½Ä†ï¿½ï¿½I
     public void SetSingleKey(KeyCode newKey)
     {
         singleKey = newKey;
@@ -128,10 +128,10 @@ public class SingleKeyController : RhythmKeyControllerBase
         expectedKey = newKey;
     }
 
-    // ÖØÖÃ†ÎæIÔOÖÃ
+    // ï¿½ï¿½ï¿½Ã†ï¿½ï¿½Iï¿½Oï¿½ï¿½
     public override void StartRhythm()
     {
-        // ´_±£æIÎ»ÔOÖÃÕı´_
+        // ï¿½_ï¿½ï¿½ï¿½IÎ»ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½_
         keyConfig.primaryKey = singleKey;
         keyConfig.secondaryKey = singleKey;
 

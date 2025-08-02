@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
-using Random = UnityEngine.Random; // 明确使用 Unity 的 Random
+using Random = UnityEngine.Random;
 
 /// <summary>
 /// 基础节奏控制器，支持道具系统
@@ -18,11 +18,11 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     public Vector3 primaryKeySpawnPosition;
     public Vector3 secondaryKeySpawnPosition;
 
-    [Header("视觉反馈")]
-    public Color normalKeyColor = Color.gray;
-    public Color highlightKeyColor = Color.white;
-    public Color successKeyColor = Color.green;
-    public Color missKeyColor = Color.red;
+    [Header("Sprite设置")]
+    public Sprite normalKeySprite;
+    public Sprite highlightKeySprite;
+    public Sprite successKeySprite;
+    public Sprite missKeySprite;
     public float feedbackDisplayDuration = 0.2f;
 
     [Header("节奏设置")]
@@ -36,9 +36,9 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     public int needConsecutiveSuccessToResume = 4;
 
     [Header("道具效果")]
-    private int baseFailToLose;           // 储存原始的失败上限
-    private float baseSuccessWindow;      // 储存原始的成功窗口
-    private float baseBeatInterval;       // 储存原始的节拍间隔
+    private int baseFailToLose;
+    private float baseSuccessWindow;
+    private float baseBeatInterval;
 
     [Header("道具模式")]
     private bool isHoldMode = false;
@@ -66,8 +66,8 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     protected bool waitingForInput = false;
     protected KeyCode expectedKey;
     protected float currentBeatStartTime;
-    protected Coroutine primaryKeyColorCoroutine;
-    protected Coroutine secondaryKeyColorCoroutine;
+    protected Coroutine primaryKeySpriteCoroutine;
+    protected Coroutine secondaryKeySpriteCoroutine;
     protected Coroutine beatCoroutine;
 
     protected Animator[] allAnimators;
@@ -107,10 +107,8 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
 
     protected virtual void Start()
     {
-        // 应用待处理的道具效果
         ApplyPendingItemEffects();
 
-        // 检查是否启用了特殊模式
         if (PlayerPrefs.GetInt("HoldModeEnabled", 0) == 1)
         {
             EnableHoldMode(PlayerPrefs.GetFloat("HoldDuration", 0.5f));
@@ -121,7 +119,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             EnableAutoPlay(PlayerPrefs.GetFloat("AutoPlayAccuracy", 0.95f));
         }
 
-        SetAllKeysColor(normalKeyColor);
+        SetAllKeysSprite(normalKeySprite);
         StartNextBeat();
     }
 
@@ -133,18 +131,15 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     // ========== 道具效果应用 ==========
     private void ApplyPendingItemEffects()
     {
-        // 应用额外生命效果
         int pendingExtraLives = PlayerPrefs.GetInt("PendingExtraLives", 0);
         if (pendingExtraLives > 0)
         {
             failToLose += pendingExtraLives;
             Debug.Log($"[{keyConfigPrefix}] 应用了 {pendingExtraLives} 个待处理的额外生命，当前失败上限: {failToLose}");
-
             PlayerPrefs.SetInt("PendingExtraLives", 0);
             PlayerPrefs.Save();
         }
 
-        // 应用成功窗口加成
         float windowBonus = PlayerPrefs.GetFloat("SuccessWindowBonus", 0f);
         if (windowBonus > 0)
         {
@@ -152,7 +147,6 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             Debug.Log($"[{keyConfigPrefix}] 应用了成功窗口加成 {windowBonus} 秒，当前成功窗口: {successWindow}");
         }
 
-        // 应用速度效果
         float savedSpeedMultiplier = PlayerPrefs.GetFloat("SpeedMultiplier", 1.0f);
         if (savedSpeedMultiplier != 1.0f)
         {
@@ -190,7 +184,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     protected virtual void HandlePlayerInput()
     {
         if (isGameEnded) return;
-        if (isAutoPlay) return; // 自动模式下不处理玩家输入
+        if (isAutoPlay) return;
 
         if (isHoldMode)
         {
@@ -198,7 +192,6 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         }
         else
         {
-            // 原有的按键逻辑
             if (Input.GetKeyDown(keyConfig.primaryKey))
                 OnKeyPressed(keyConfig.primaryKey);
             else if (Input.GetKeyDown(keyConfig.secondaryKey))
@@ -206,28 +199,24 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         }
     }
 
-    // 处理长按输入
     private void HandleHoldInput()
     {
-        // 检测主键按下
         if (Input.GetKeyDown(keyConfig.primaryKey) && !isHolding && expectedKey == keyConfig.primaryKey)
         {
             isHolding = true;
             holdStartTime = Time.time;
             currentHoldKey = keyConfig.primaryKey;
-            ShowFeedback(keyConfig.primaryKey, highlightKeyColor);
+            ShowFeedback(keyConfig.primaryKey, highlightKeySprite);
         }
 
-        // 检测副键按下
         if (Input.GetKeyDown(keyConfig.secondaryKey) && !isHolding && expectedKey == keyConfig.secondaryKey)
         {
             isHolding = true;
             holdStartTime = Time.time;
             currentHoldKey = keyConfig.secondaryKey;
-            ShowFeedback(keyConfig.secondaryKey, highlightKeyColor);
+            ShowFeedback(keyConfig.secondaryKey, highlightKeySprite);
         }
 
-        // 检测按键释放
         if (isHolding && Input.GetKeyUp(currentHoldKey))
         {
             isHolding = false;
@@ -239,7 +228,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             }
             else
             {
-                ShowFeedback(currentHoldKey, missKeyColor);
+                ShowFeedback(currentHoldKey, missKeySprite);
                 if (waitingForInput)
                 {
                     OnBeatFailed();
@@ -274,7 +263,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         expectedKey = (beatCounter % 2 == 0) ? keyConfig.primaryKey : keyConfig.secondaryKey;
         currentBeatStartTime = Time.time;
         waitingForInput = true;
-        SetKeyColor(expectedKey, highlightKeyColor);
+        SetKeySprite(expectedKey, highlightKeySprite);
         beatCounter++;
     }
 
@@ -291,7 +280,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         if (!waitingForInput)
         {
             if (pressedKey == keyConfig.primaryKey || pressedKey == keyConfig.secondaryKey)
-                ShowFeedback(pressedKey, missKeyColor);
+                ShowFeedback(pressedKey, missKeySprite);
             return;
         }
 
@@ -307,7 +296,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
 
         successCount++;
         waitingForInput = false;
-        ShowFeedback(expectedKey, successKeyColor);
+        ShowFeedback(expectedKey, successKeySprite);
 
         if (isPaused)
         {
@@ -331,7 +320,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
 
         if (!isPaused) failCount++;
         waitingForInput = false;
-        ShowFeedback(expectedKey, missKeyColor);
+        ShowFeedback(expectedKey, missKeySprite);
 
         if (isPaused)
         {
@@ -364,7 +353,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     {
         isPaused = true;
         consecutiveSuccessOnFailedKey = 0;
-        SetKeyColor(expectedKey, missKeyColor);
+        SetKeySprite(expectedKey, missKeySprite);
         Debug.Log($"[{keyConfigPrefix}] 进入暂停状态，需要连按 {expectedKey} 键 {needConsecutiveSuccessToResume} 次恢复");
     }
 
@@ -373,7 +362,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         Debug.Log("恢复游戏状态");
         isPaused = false;
         consecutiveSuccessOnFailedKey = 0;
-        SetAllKeysColor(normalKeyColor);
+        SetAllKeysSprite(normalKeySprite);
 
         if (beatCoroutine != null) StopCoroutine(beatCoroutine);
         beatCoroutine = StartCoroutine(WaitForNextBeat());
@@ -447,11 +436,9 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         {
             if (waitingForInput)
             {
-                // 等待一个随机的时间（在成功窗口内）
                 float waitTime = Random.Range(successWindow * 0.2f, successWindow * 0.8f);
                 yield return new WaitForSeconds(waitTime);
 
-                // 根据准确率决定是否成功
                 if (Random.value < autoPlayAccuracy && waitingForInput)
                 {
                     OnKeyPressed(expectedKey);
@@ -464,7 +451,6 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     // ========== 回合结束效果 ==========
     private void TriggerRoundEndEffects()
     {
-        // 处理金币倍数持续回合
         int remainingGoldRounds = PlayerPrefs.GetInt("GoldMultiplierRounds", 0);
         if (remainingGoldRounds > 0)
         {
@@ -489,31 +475,31 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     protected virtual IEnumerator WaitForNextBeat()
     {
         yield return new WaitForSecondsRealtime(0.1f);
-        SetAllKeysColor(normalKeyColor);
+        SetAllKeysSprite(normalKeySprite);
         yield return new WaitForSecondsRealtime(beatInterval - 0.1f);
         if (infiniteLoop) StartNextBeat();
     }
 
-    // ========== 视觉反馈 ==========
-    protected virtual void ShowFeedback(KeyCode key, Color color)
+    // ========== 视觉反馈（Sprite版本）==========
+    protected virtual void ShowFeedback(KeyCode key, Sprite sprite)
     {
         if (key == keyConfig.primaryKey)
         {
-            if (primaryKeyColorCoroutine != null) StopCoroutine(primaryKeyColorCoroutine);
-            primaryKeyColorCoroutine = StartCoroutine(ShowColorFeedback(primaryKeySpriteRenderer, color));
+            if (primaryKeySpriteCoroutine != null) StopCoroutine(primaryKeySpriteCoroutine);
+            primaryKeySpriteCoroutine = StartCoroutine(ShowSpriteFeedback(primaryKeySpriteRenderer, sprite));
         }
         else if (key == keyConfig.secondaryKey)
         {
-            if (secondaryKeyColorCoroutine != null) StopCoroutine(secondaryKeyColorCoroutine);
-            secondaryKeyColorCoroutine = StartCoroutine(ShowColorFeedback(secondaryKeySpriteRenderer, color));
+            if (secondaryKeySpriteCoroutine != null) StopCoroutine(secondaryKeySpriteCoroutine);
+            secondaryKeySpriteCoroutine = StartCoroutine(ShowSpriteFeedback(secondaryKeySpriteRenderer, sprite));
         }
     }
 
-    protected IEnumerator ShowColorFeedback(SpriteRenderer renderer, Color feedbackColor)
+    protected IEnumerator ShowSpriteFeedback(SpriteRenderer renderer, Sprite feedbackSprite)
     {
         if (renderer == null) yield break;
-        Color originalColor = renderer.color;
-        renderer.color = feedbackColor;
+        Sprite originalSprite = renderer.sprite;
+        renderer.sprite = feedbackSprite;
 
         if (isPaused)
         {
@@ -531,15 +517,15 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
 
         if (renderer == GetKeyRenderer(expectedKey) && waitingForInput)
         {
-            renderer.color = highlightKeyColor;
+            renderer.sprite = highlightKeySprite;
         }
         else if (isPaused && renderer == GetKeyRenderer(expectedKey))
         {
-            renderer.color = missKeyColor;
+            renderer.sprite = missKeySprite;
         }
         else
         {
-            renderer.color = normalKeyColor;
+            renderer.sprite = normalKeySprite;
         }
     }
 
@@ -550,41 +536,41 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         return null;
     }
 
-    protected virtual void SetKeyColor(KeyCode key, Color color)
+    protected virtual void SetKeySprite(KeyCode key, Sprite sprite)
     {
         SpriteRenderer renderer = GetKeyRenderer(key);
         if (renderer != null)
         {
-            if (key == keyConfig.primaryKey && primaryKeyColorCoroutine != null)
-                StopCoroutine(primaryKeyColorCoroutine);
-            else if (key == keyConfig.secondaryKey && secondaryKeyColorCoroutine != null)
-                StopCoroutine(secondaryKeyColorCoroutine);
+            if (key == keyConfig.primaryKey && primaryKeySpriteCoroutine != null)
+                StopCoroutine(primaryKeySpriteCoroutine);
+            else if (key == keyConfig.secondaryKey && secondaryKeySpriteCoroutine != null)
+                StopCoroutine(secondaryKeySpriteCoroutine);
 
-            if (isPaused && key == expectedKey && color == normalKeyColor)
+            if (isPaused && key == expectedKey && sprite == normalKeySprite)
             {
                 if (waitingForInput)
-                    renderer.color = highlightKeyColor;
+                    renderer.sprite = highlightKeySprite;
                 else
-                    renderer.color = missKeyColor;
+                    renderer.sprite = missKeySprite;
             }
             else
             {
-                renderer.color = color;
+                renderer.sprite = sprite;
             }
         }
     }
 
-    protected void SetAllKeysColor(Color color)
+    protected void SetAllKeysSprite(Sprite sprite)
     {
         if (primaryKeySpriteRenderer != null)
         {
-            if (primaryKeyColorCoroutine != null) StopCoroutine(primaryKeyColorCoroutine);
-            primaryKeySpriteRenderer.color = color;
+            if (primaryKeySpriteCoroutine != null) StopCoroutine(primaryKeySpriteCoroutine);
+            primaryKeySpriteRenderer.sprite = sprite;
         }
         if (secondaryKeySpriteRenderer != null)
         {
-            if (secondaryKeyColorCoroutine != null) StopCoroutine(secondaryKeyColorCoroutine);
-            secondaryKeySpriteRenderer.color = color;
+            if (secondaryKeySpriteCoroutine != null) StopCoroutine(secondaryKeySpriteCoroutine);
+            secondaryKeySpriteRenderer.sprite = sprite;
         }
     }
 
@@ -617,7 +603,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     public virtual void StartRhythm()
     {
         if (isGameEnded) return;
-        SetAllKeysColor(normalKeyColor);
+        SetAllKeysSprite(normalKeySprite);
         StartNextBeat();
     }
 }
