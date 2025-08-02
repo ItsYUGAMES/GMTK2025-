@@ -40,18 +40,38 @@ public class HoverHandler : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public void OnPointerExit(PointerEventData eventData)
     {
         Debug.Log($"鼠标离开 HoverPanel - GameObject: {gameObject.name}");
-        
-        // 添加小延迟，防止因为提示框遮挡导致的误触发
-        StartCoroutine(DelayedExit());
+    
+        isHovering = false;
+        isStable = false;
+
+        // 停止显示协程
+        if (hoverCoroutine != null)
+        {
+            StopCoroutine(hoverCoroutine);
+            hoverCoroutine = null;
+            Debug.Log("停止显示协程");
+        }
+
+        // 立即隐藏提示框
+        if (isTooltipShowing)
+        {
+            Debug.Log("执行隐藏提示框");
+            isTooltipShowing = false;
+            if (shopItemUI != null)
+            {
+                shopItemUI.HideTooltip();
+            }
+        }
     }
 
     private IEnumerator DelayedExit()
     {
         yield return new WaitForSeconds(0.1f); // 短暂延迟
-        
+    
         // 重新检查鼠标位置
         Vector2 mousePosition = Input.mousePosition;
         RectTransform rectTransform = GetComponent<RectTransform>();
+
         
         if (rectTransform != null && !RectTransformUtility.RectangleContainsScreenPoint(rectTransform, mousePosition))
         {
