@@ -11,6 +11,7 @@ public class StartManager : MonoBehaviour
     [Header("判定设置")]
     public int requiredSuccessCount = 4;
     public float beatInterval = 1.0f;
+    public float successWindow = 0.4f; // 判定窗口期（秒）
     
     [Header("游戏模式")]
     public bool isSingleKeyMode = false;
@@ -28,6 +29,7 @@ public class StartManager : MonoBehaviour
     public Color highlightColor = Color.yellow;
     public Color successColor = Color.green;
 
+    
     private int currentSuccessCount = 0;
     private bool isWaitingForInput = false;
     private bool isCompleted = false;
@@ -109,6 +111,19 @@ public class StartManager : MonoBehaviour
         {
             if (mb == this || mb is PauseManager)
                 continue;
+            // 检查是否挂载在 Canvas 对象上
+            if (mb.GetComponentInParent<Canvas>() != null)
+            {
+                // 如果是 ProgressBarController，不跳过，需要暂停
+                if (mb.GetType().Name == "ProgressBarController")
+                {
+                    // 继续执行暂停逻辑
+                }
+                else
+                {
+                    continue; // 其他 Canvas 组件跳过
+                }
+            }
             // if (!mb.enabled)
             //     continue;
             pausedBehaviors.Add(mb);
@@ -158,10 +173,11 @@ public class StartManager : MonoBehaviour
             SetKeyColor(currentExpectedKey, highlightColor);
         }
 
+        float currentBeatStartTime = Time.time;
         isWaitingForInput = true;
 
-        // 等待玩家输入或超时
-        float timeLeft = beatInterval;
+        // 等待判定窗口期内的输入
+        float timeLeft = successWindow;
         while (timeLeft > 0 && isWaitingForInput)
         {
             timeLeft -= Time.deltaTime;
@@ -176,17 +192,15 @@ public class StartManager : MonoBehaviour
 
         isWaitingForInput = false;
 
-        // 如果按键成功，显示绿色反馈
+        // 显示成功反馈
         if (currentSuccessCount > 0)
         {
             if (isSingleKeyMode)
             {
-                // 单键模式：只在主键上显示成功反馈
                 SetKeyColor(primaryKey, successColor);
             }
             else
             {
-                // 双键模式：在期望键上显示成功反馈
                 SetKeyColor(currentExpectedKey, successColor);
             }
             yield return new WaitForSeconds(0.1f);
@@ -194,7 +208,13 @@ public class StartManager : MonoBehaviour
 
         // 恢复按键颜色
         SetAllKeysColor(normalColor);
-        yield return new WaitForSeconds(0.2f);
+    
+        // 等待剩余时间到下一个节拍
+        float remainingTime = beatInterval - successWindow - 0.1f;
+        if (remainingTime > 0)
+        {
+            yield return new WaitForSeconds(remainingTime);
+        }
     }
 
     private void OnKeyPressed()

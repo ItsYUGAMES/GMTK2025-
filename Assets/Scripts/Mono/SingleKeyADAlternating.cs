@@ -17,9 +17,26 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
     // 只检测A键输入
     protected override void HandlePlayerInput()
     {
-        if (isGameEnded || isPaused) return;  // 添加isPaused检查
-        if (Input.GetKeyDown(keyConfig.primaryKey))
-            OnKeyPressed(keyConfig.primaryKey);
+        if (isGameEnded) return;
+    
+        if (isPaused)
+        {
+            // 暂停状态下的输入处理
+            if (Input.GetKeyDown(keyConfig.primaryKey) && waitingForInput)
+            {
+                // A键在暂停状态下只有在期望键匹配时才成功
+                if (expectedKey == keyConfig.primaryKey || expectedKey == keyConfig.secondaryKey)
+                {
+                    OnBeatSuccess();
+                }
+            }
+        }
+        else
+        {
+            // 正常状态下的输入处理
+            if (Input.GetKeyDown(keyConfig.primaryKey))
+                OnKeyPressed(keyConfig.primaryKey);
+        }
     }
 
     // 重写StartNextBeat：只使用主键prefab，但期望键仍然交替
@@ -64,6 +81,7 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
     {
         pauseManager.scriptsToPause.Remove(this);
         base.OnBeatFailed();
+        Debug.Log($"[{keyConfigPrefix}] 失败次数增加: {failCount}");
         onADKeyFailed?.Invoke();
     }
 
@@ -73,16 +91,16 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
     }
 
     // 重写SetKeyColor：只处理主键
+    // 修改 SetKeyColor 方法
     protected override void SetKeyColor(KeyCode key, Color color)
     {
-        // 无论期望键是A还是D，都只设置主键的颜色
         if (primaryKeySpriteRenderer != null)
         {
             if (primaryKeyColorCoroutine != null)
                 StopCoroutine(primaryKeyColorCoroutine);
 
             // 暂停状态下的特殊处理
-            if (isPaused && key == lastFailedKey && color == normalKeyColor)
+            if (isPaused && key == expectedKey && color == normalKeyColor)
             {
                 if (waitingForInput)
                     primaryKeySpriteRenderer.color = highlightKeyColor;

@@ -42,7 +42,6 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     protected bool isGameEnded = false;
     public bool isPaused = false;
     protected bool pausedByManager = false;   //   PauseManager  ͣ
-    protected KeyCode lastFailedKey;
     public int consecutiveSuccessOnFailedKey = 0;
 
     //     ʱ
@@ -149,15 +148,25 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
 
     protected virtual void HandlePauseRecoveryInput()
     {
-        if (consecutiveSuccessOnFailedKey >= needConsecutiveSuccessToResume)
+        // 暂停状态下只响应当前期望的键
+        if (Input.GetKeyDown(expectedKey) && waitingForInput)
         {
-            ResumeFromPause();
+            OnBeatSuccess(); // 这会增加 consecutiveSuccessOnFailedKey 并检查是否达到恢复条件
+        }
+        else if ((Input.GetKeyDown(keyConfig.primaryKey) || Input.GetKeyDown(keyConfig.secondaryKey)) && waitingForInput)
+        {
+            // 按错键时重置恢复进度
+            if (Input.GetKeyDown(expectedKey) == false)
+            {
+                consecutiveSuccessOnFailedKey = 0;
+                OnBeatFailed();
+            }
         }
     }
 
     protected bool IsOtherControllerKeyPressed()
     {
-        KeyCode otherKey = (lastFailedKey == keyConfig.primaryKey) ? keyConfig.secondaryKey : keyConfig.primaryKey;
+        KeyCode otherKey = (expectedKey == keyConfig.primaryKey) ? keyConfig.secondaryKey : keyConfig.primaryKey;
         return Input.GetKeyDown(otherKey);
     }
 
@@ -228,7 +237,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     {
         if (isGameEnded) return;
 
-        failCount++;
+        if(!isPaused)failCount++;
         waitingForInput = false;
         ShowFeedback(expectedKey, missKeyColor);
 
@@ -259,18 +268,15 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     protected virtual void EnterPauseForFailure()
     {
         isPaused = true;
-        lastFailedKey = expectedKey;
         consecutiveSuccessOnFailedKey = 0;
 
-        // 不暂停动画，让一切正常运行
-        // PauseAllAnimations();
-    
-        SetKeyColor(lastFailedKey, missKeyColor);
-        Debug.Log($"[{keyConfigPrefix}] 进入暂停状态，需要连按 {lastFailedKey} 键 {needConsecutiveSuccessToResume} 次恢复");
+        SetKeyColor(expectedKey, missKeyColor); // 使用 expectedKey 替代 lastFailedKey
+        Debug.Log($"[{keyConfigPrefix}] 进入暂停状态，需要连按 {expectedKey} 键 {needConsecutiveSuccessToResume} 次恢复");
     }
 
     protected virtual void ResumeFromPause()
     {
+        Debug.Log("恢复游戏状态");
         isPaused = false;
         consecutiveSuccessOnFailedKey = 0;
     
@@ -364,17 +370,14 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         // 修改颜色恢复逻辑 - 优先显示当前节拍高亮
         if (renderer == GetKeyRenderer(expectedKey) && waitingForInput)
         {
-            // 当前节拍的键始终显示高亮，即使在暂停状态
             renderer.color = highlightKeyColor;
         }
-        else if (isPaused && renderer == GetKeyRenderer(lastFailedKey))
+        else if (isPaused && renderer == GetKeyRenderer(expectedKey))
         {
-            // 失败键在非当前节拍时显示红色
-            renderer.color = missKeyColor;
+            renderer.color = missKeyColor; // 使用 expectedKey 替代 lastFailedKey
         }
         else
         {
-            // 其他情况显示正常颜色
             renderer.color = normalKeyColor;
         }
     }
@@ -397,13 +400,12 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
                 StopCoroutine(secondaryKeyColorCoroutine);
 
             // 暂停状态下的特殊处理
-            if (isPaused && key == lastFailedKey && color == normalKeyColor)
+            if (isPaused && key == expectedKey && color == normalKeyColor)
             {
-                // 如果是失败键且要设置为正常颜色，检查是否应该高亮
-                if (key == expectedKey && waitingForInput)
-                    renderer.color = highlightKeyColor;  // 当前节拍键保持高亮
+                if (waitingForInput)
+                    renderer.color = highlightKeyColor;
                 else
-                    renderer.color = missKeyColor;       // 失败键保持红色
+                    renderer.color = missKeyColor;
             }
             else
             {
