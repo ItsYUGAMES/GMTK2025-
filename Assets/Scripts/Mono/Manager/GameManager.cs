@@ -18,7 +18,8 @@ public class GameManager : MonoBehaviour
     private int currentLevel = 1; // 当前关卡，基于场景位置
     [Header("游戏模式")]
     public bool isSingleMode = false; // 是否为Single模式
-
+    [Header("音效设置")]
+    public AudioClip transitionCompleteSFX; // Transition场景移动完成音效
 // 设置Single模式
     public void SetSingleMode(bool enabled)
     {
@@ -127,19 +128,123 @@ public class GameManager : MonoBehaviour
     public bool CheckGameplayScene()
     {
         string currentSceneName = SceneManager.GetActiveScene().name.ToLower();
-    
+
         // 更新关卡信息
         UpdateLevelFromCurrentScene();
-    
+
         if (currentSceneName == "gameplay")
         {
             return true;
         }
     
+        // 在 transition 场景中重置对象位置
+        if (currentSceneName == "transition")
+        {
+            // 延迟执行，等待场景完全加载
+            StartCoroutine(WaitAndMoveObjects());
+        }
+
         return false;
     }
-    
 
+// 等待一帧后再移动对象
+    private System.Collections.IEnumerator WaitAndMoveObjects()
+    {
+        // 等待更长时间，确保所有对象都完全初始化
+        yield return new WaitForSeconds(0.1f);
+
+        GameObject upObj = GameObject.Find("Up");
+        GameObject downObj = GameObject.Find("Down");
+
+        if (upObj == null || downObj == null)
+        {
+            Debug.LogWarning("在Transition场景中未找到Up或Down对象");
+            yield break;
+        }
+
+        // 检查对象是否已经在原点
+        if (Vector3.Distance(upObj.transform.position, Vector3.zero) < 0.1f && 
+            Vector3.Distance(downObj.transform.position, Vector3.zero) < 0.1f)
+        {
+            Debug.Log("Up和Down对象已经在原点附近，跳过移动动画");
+            // 直接播放音效
+            if (SFXManager.Instance != null && transitionCompleteSFX != null)
+            {
+                SFXManager.Instance.PlaySFX(transitionCompleteSFX);
+            }
+            yield break;
+        }
+
+        Debug.Log($"找到Up对象: {upObj.name}, 位置: {upObj.transform.position}");
+        Debug.Log($"找到Down对象: {downObj.name}, 位置: {downObj.transform.position}");
+
+        StartCoroutine(MoveObjectsToOrigin(upObj, downObj));
+    }
+    
+    // 重置 Up 和 Down 对象到原点
+    // 重置 Up 和 Down 对象到原点
+    private void ResetUpDownObjectsToOrigin()
+    {
+        GameObject upObj = GameObject.Find("Up");
+        GameObject downObj = GameObject.Find("Down");
+
+        if (upObj != null || downObj != null)
+        {
+            StartCoroutine(MoveObjectsToOrigin(upObj, downObj));
+        }
+    }
+    private System.Collections.IEnumerator MoveObjectsToOrigin(GameObject upObj, GameObject downObj)
+    {
+        float moveSpeed = 3f; // 降低移动速度，让动画更明显
+        Vector3 targetPos = Vector3.zero;
+
+        Vector3 upStartPos = upObj.transform.position;
+        Vector3 downStartPos = downObj.transform.position;
+
+        Debug.Log($"开始移动 - Up起始位置: {upStartPos}, Down起始位置: {downStartPos}, 目标位置: {targetPos}");
+
+        // 确保起始位置不在原点
+        if (Vector3.Distance(upStartPos, targetPos) < 0.1f && Vector3.Distance(downStartPos, targetPos) < 0.1f)
+        {
+            Debug.Log("对象已经在原点，无需移动");
+            yield break;
+        }
+
+        float journey = 0f;
+
+        // 移动动画
+        while (journey <= 1f)
+        {
+            journey += Time.deltaTime * moveSpeed;
+
+            upObj.transform.position = Vector3.Lerp(upStartPos, targetPos, journey);
+            downObj.transform.position = Vector3.Lerp(downStartPos, targetPos, journey);
+
+            yield return null;
+        }
+
+        // 确保最终位置精确
+        upObj.transform.position = targetPos;
+        downObj.transform.position = targetPos;
+
+        Debug.Log("Up和Down对象已移动到原点");
+
+        // 移动完成后播放音效，从0.3秒开始
+        if (SFXManager.Instance != null && transitionCompleteSFX != null)
+        {
+            AudioSource audioSource = SFXManager.Instance.GetAudioSource();
+            audioSource.clip = transitionCompleteSFX;
+            audioSource.time = 0.4f; // 从0.3秒开始播放
+            SFXManager.Instance.PlaySFX(transitionCompleteSFX);
+            Debug.Log("播放移动完成音效（从0.4秒开始）");
+        }
+    }
+
+// 获取移动完成音效的方法，你需要在GameManager中添加相应的AudioClip字段
+    private AudioClip GetMoveCompleteAudioClip()
+    {
+        return transitionCompleteSFX;
+    }
     // 更新游戏开始方法
     public void GameStart_Single()
     {

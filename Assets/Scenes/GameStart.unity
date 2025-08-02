@@ -302,6 +302,7 @@ MonoBehaviour:
   progressBar: {fileID: 0}
   failManager: {fileID: 1192094726}
   isSingleMode: 0
+  transitionCompleteSFX: {fileID: 8300000, guid: 532df27fa88619e47bfefd946a5a116b, type: 3}
 --- !u!4 &1192094723
 Transform:
   m_ObjectHideFlags: 0
