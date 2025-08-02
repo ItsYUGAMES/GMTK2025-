@@ -1,26 +1,26 @@
 using UnityEngine;
 
 /// <summary>
-/// Ôö¼ÓÒ»´ÎÊ§Îó»ú»áµÀ¾ß (5½ğ±Ò)
+/// è´­ä¹°ä¸€æ¬¡å¤±è´¥æœºä¼šé“å…· (5é‡‘å¸)
 /// </summary>
 [CreateAssetMenu(fileName = "Extra Life Item", menuName = "Shop/Items/Extra Life")]
 public class ExtraLifeItem : ItemEffect
 {
-    [Header("µÀ¾ßĞ§¹û")]
+    [Header("é“å…·æ•ˆæœ")]
     public int extraLives = 1;
 
     private void OnEnable()
     {
-        itemName = "Ôö¼ÓÒ»´ÎÊ§Îó»ú»á";
-        itemDescription = "Ôö¼Ó1´ÎÊ§Îó»ú»á";
+        itemName = "è´­ä¹°ä¸€æ¬¡å¤±è´¥æœºä¼š";
+        itemDescription = "å¢åŠ 1æ¬¡å¤±è´¥æœºä¼š";
         itemPrice = 5;
-        isConsumable = true;  // ¿ÉÒÔ¶à´Î¹ºÂò
+    
         isPermanent = true;
     }
 
     public override void OnPurchase()
     {
-        Debug.Log($"¹ºÂòÁË {itemName}£¬½«Ôö¼Ó {extraLives} ´ÎÊ§Îó»ú»á");
+        Debug.Log($"è´­ä¹°äº† {itemName}ï¼Œå¢åŠ äº† {extraLives} æ¬¡å¤±è´¥æœºä¼š");
 
         RhythmKeyControllerBase[] controllers = FindObjectsOfType<RhythmKeyControllerBase>();
 
@@ -42,6 +42,6 @@ public class ExtraLifeItem : ItemEffect
         int currentPending = PlayerPrefs.GetInt("PendingExtraLives", 0);
         PlayerPrefs.SetInt("PendingExtraLives", currentPending + extraLives);
         PlayerPrefs.Save();
-        Debug.Log($"±£´æÁË {extraLives} ¸ö´ıÓ¦ÓÃµÄ¶îÍâÉúÃü");
+        Debug.Log($"ä¿å­˜äº† {extraLives} ä¸ªå¾…åº”ç”¨çš„é¢å¤–ç”Ÿå‘½");
     }
 }

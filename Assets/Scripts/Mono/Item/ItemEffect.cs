@@ -1,47 +1,47 @@
 using UnityEngine;
 
 /// <summary>
-/// µÀ¾ßĞ§¹û»ùÀà - ËùÓĞµÀ¾ß¶¼¼Ì³Ğ×ÔÕâ¸ö³éÏóÀà
+/// é“å…·æ•ˆæœåŸºç±» - æ‰€æœ‰é“å…·éƒ½ç»§æ‰¿è¿™ä¸ªåŸºç¡€ç±»
 /// </summary>
 public abstract class ItemEffect : ScriptableObject
 {
-    [Header("µÀ¾ß»ù±¾ĞÅÏ¢")]
-    public string itemName = "µÀ¾ßÃû³Æ";
-    public string itemDescription = "µÀ¾ßÃèÊö";
+    [Header("é“å…·åŸºæœ¬ä¿¡æ¯")]
+    public string itemName = "é»˜è®¤é“å…·";
+    public string itemDescription = "é»˜è®¤æè¿°";
     public Sprite itemIcon;
     public int itemPrice = 10;
 
-    [Header("µÀ¾ßÉèÖÃ")]
-    public bool isConsumable = false;  // ÊÇ·ñÎªÏûºÄÆ·£¨¿ÉÒÔ¶à´Î¹ºÂò£©
-    public bool isPermanent = true;     // ÊÇ·ñÎªÓÀ¾ÃĞ§¹û
+    [Header("é“å…·å±æ€§")]
+   
+    public bool isPermanent = true;     // æ˜¯å¦ä¸ºæ°¸ä¹…æ•ˆæœ
 
     /// <summary>
-    /// ¹ºÂòÊ±Á¢¼´Ö´ĞĞµÄĞ§¹û
+    /// è´­ä¹°æ—¶ä¼šæ‰§è¡Œçš„æ•ˆæœ
     /// </summary>
     public abstract void OnPurchase();
 
     /// <summary>
-    /// ÓÎÏ·¿ªÊ¼Ê±Ö´ĞĞµÄĞ§¹û£¨¿ÉÑ¡£©
+    /// æ¸¸æˆå¼€å§‹æ—¶æ‰§è¡Œçš„æ•ˆæœï¼ˆå¯é€‰ï¼‰
     /// </summary>
     public virtual void OnGameStart() { }
 
     /// <summary>
-    /// Ã¿»ØºÏ¿ªÊ¼Ê±Ö´ĞĞµÄĞ§¹û£¨¿ÉÑ¡£©
+    /// æ¯å›åˆå¼€å§‹æ—¶æ‰§è¡Œçš„æ•ˆæœï¼ˆå¯é€‰ï¼‰
     /// </summary>
     public virtual void OnRoundStart() { }
 
     /// <summary>
-    /// Ã¿»ØºÏ½áÊøÊ±Ö´ĞĞµÄĞ§¹û£¨¿ÉÑ¡£©
+    /// æ¯å›åˆç»“æŸæ—¶æ‰§è¡Œçš„æ•ˆæœï¼ˆå¯é€‰ï¼‰
     /// </summary>
     public virtual void OnRoundEnd() { }
 
     /// <summary>
-    /// ¼ì²éµÀ¾ßÊÇ·ñ¿ÉÒÔ¹ºÂò£¨¿ÉÒÔÌí¼Ó¶îÍâµÄ¹ºÂòÌõ¼ş£©
+    /// æ£€æŸ¥é“å…·æ˜¯å¦å¯è´­ä¹°ï¼ˆå¯é‡å†™æ·»åŠ é¢å¤–çš„è´­ä¹°æ¡ä»¶ï¼‰
     /// </summary>
-    /// <returns>·µ»ØÊÇ·ñ¿ÉÒÔ¹ºÂò</returns>
+    /// <returns>è¿”å›é“å…·æ˜¯å¦å¯è´­ä¹°</returns>
     public virtual bool CanPurchase()
     {
-        // ¼ì²é½ğ±ÒÊÇ·ñ×ã¹»
+        // æ£€æŸ¥é‡‘å¸æ˜¯å¦è¶³å¤Ÿ
         if (PlayerDataManager.Instance != null)
         {
             return PlayerDataManager.Instance.GetPlayerGold() >= itemPrice;
@@ -50,28 +50,28 @@ public abstract class ItemEffect : ScriptableObject
     }
 
     /// <summary>
-    /// »ñÈ¡µÀ¾ßµÄÏêÏ¸ÃèÊö£¨¿ÉÒÔ°üº¬µ±Ç°Ğ§¹ûÖµµÈ¶¯Ì¬ĞÅÏ¢£©
+    /// è·å–é“å…·çš„è¯¦ç»†æè¿°ï¼ˆå¯åŒ…å«å½“å‰æ•ˆæœå€¼ç­‰åŠ¨æ€ä¿¡æ¯ï¼‰
     /// </summary>
-    /// <returns>·µ»ØÏêÏ¸ÃèÊöÎÄ±¾</returns>
+    /// <returns>è¿”å›è¯¦ç»†æè¿°æ–‡æœ¬</returns>
     public virtual string GetDetailedDescription()
     {
         return itemDescription;
     }
 
     /// <summary>
-    /// µÀ¾ßĞ§¹ûÊÇ·ñ¼¤»î
+    /// æ£€æŸ¥æ•ˆæœæ˜¯å¦æ¿€æ´»
     /// </summary>
-    /// <returns>·µ»ØµÀ¾ßÊÇ·ñ´¦ÓÚ¼¤»î×´Ì¬</returns>
+    /// <returns>è¿”å›é“å…·æ˜¯å¦å¤„äºæ¿€æ´»çŠ¶æ€</returns>
     public virtual bool IsActive()
     {
         return true;
     }
 
     /// <summary>
-    /// ÖØÖÃµÀ¾ßĞ§¹û£¨ÓÃÓÚĞÂÓÎÏ·¿ªÊ¼Ê±£©
+    /// é‡ç½®é“å…·æ•ˆæœï¼ˆé€šå¸¸åœ¨æ¸¸æˆå¼€å§‹æ—¶ï¼‰
     /// </summary>
     public virtual void ResetEffect()
     {
-        // ×ÓÀà¿ÉÒÔÖØĞ´´Ë·½·¨À´ÖØÖÃÌØ¶¨µÄĞ§¹û
+        // å­ç±»å¯ä»¥é‡å†™æ­¤æ–¹æ³•æ¥é‡ç½®ç‰¹å®šæ•ˆæœ
     }
 }

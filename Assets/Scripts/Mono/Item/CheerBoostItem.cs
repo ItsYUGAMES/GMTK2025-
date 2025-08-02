@@ -1,44 +1,44 @@
 using UnityEngine;
 
 /// <summary>
-/// ¼ÓËÙ»¶ºôÖµ£¨¿º·Ü¹ÛÖÚ£©µÀ¾ß (5½ğ±Ò)
+/// åŠ é€Ÿæ¬¢å‘¼å€¼å¡«å……é“å…· (5é‡‘å¸)
 /// </summary>
 [CreateAssetMenu(fileName = "Cheer Boost Item", menuName = "Shop/Items/Cheer Boost")]
 public class CheerBoostItem : ItemEffect
 {
-    [Header("µÀ¾ßĞ§¹û")]
+    [Header("é“å…·æ•ˆæœ")]
     [Range(0.5f, 0.9f)]
-    public float progressMultiplier = 0.7f;  // ½ø¶ÈÌõÌî³äËÙ¶È±¶Êı£¨0.7 = ¼õÉÙ30%Ê±¼ä£©
+    public float progressMultiplier = 0.7f;  // å‡å°‘å¡«å……æ‰€éœ€æ—¶é—´å€æ•°ï¼ˆ0.7 = å‡å°‘30%æ—¶é—´ï¼‰
 
     private void OnEnable()
     {
-        itemName = "¿º·Ü¹ÛÖÚ";
-        itemDescription = "¼ÓËÙ»¶ºôÖµ»ıÀÛ";
+        itemName = "æ¬¢å‘¼åŠ é€Ÿ";
+        itemDescription = "åŠ é€Ÿæ¬¢å‘¼å€¼å¡«å……";
         itemPrice = 5;
-        isConsumable = false;
+    
         isPermanent = true;
     }
 
     public override void OnPurchase()
     {
-        Debug.Log($"¹ºÂòÁË {itemName}£¬»¶ºôÖµ»ıÀÛËÙ¶ÈÌáÉı£¡");
+        Debug.Log($"è´­ä¹°äº† {itemName}ï¼Œæ¬¢å‘¼å€¼å¡«å……é€Ÿåº¦å¢åŠ ");
 
-        // ²éÕÒ½ø¶ÈÌõ¿ØÖÆÆ÷
+        // æŸ¥æ‰¾è¿›åº¦æ¡æ§åˆ¶å™¨
         ProgressBarController progressBar = FindObjectOfType<ProgressBarController>();
 
         if (progressBar != null)
         {
-            // ¼õÉÙÌî³äËùĞèÊ±¼ä
+            // å‡å°‘å¡«å……æ‰€éœ€æ—¶é—´
             progressBar.fillDuration *= progressMultiplier;
-            Debug.Log($"½ø¶ÈÌõÌî³äÊ±¼äËõ¶ÌÎª: {progressBar.fillDuration} Ãë");
+            Debug.Log($"è¿›åº¦æ¡å¡«å……æ—¶é—´è°ƒæ•´ä¸º: {progressBar.fillDuration} ç§’");
 
-            // Èç¹û½ø¶ÈÌõÕıÔÚÌî³ä£¬ÖØĞÂ¿ªÊ¼ÒÔÓ¦ÓÃĞÂËÙ¶È
+            // å¦‚æœè¿›åº¦æ¡æ­£åœ¨å¡«å……ï¼Œé‡æ–°å¼€å§‹åº”ç”¨æ–°é€Ÿåº¦
             progressBar.StopFilling();
             progressBar.StartFilling();
         }
         else
         {
-            // ±£´æĞ§¹û¹©ºóĞøÊ¹ÓÃ
+            // ä¿å­˜æ•ˆæœä¾›åç»­ä½¿ç”¨
             PlayerPrefs.SetFloat("CheerBoostMultiplier", progressMultiplier);
             PlayerPrefs.Save();
         }
@@ -47,6 +47,6 @@ public class CheerBoostItem : ItemEffect
     public override string GetDetailedDescription()
     {
         int speedIncrease = Mathf.RoundToInt((1f / progressMultiplier - 1f) * 100f);
-        return $"»¶ºôÖµ»ıÀÛËÙ¶ÈÌáÉı {speedIncrease}%";
+        return $"æ¬¢å‘¼å€¼å¡«å……é€Ÿåº¦å¢åŠ  {speedIncrease}%";
     }
 }

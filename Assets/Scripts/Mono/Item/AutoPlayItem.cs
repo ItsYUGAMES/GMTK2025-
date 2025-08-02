@@ -3,56 +3,55 @@ using System.Linq;
 using System.Collections.Generic;
 
 /// <summary>
-/// ×Ô¶¯Ñİ×àµÀ¾ß - ¿ÉÒÔÑ¡ÔñAD»òJL¿ØÖÆÆ÷½øĞĞ×Ô¶¯Ñİ×à (20½ğ±Ò)
+/// è‡ªåŠ¨æ’­æ”¾é“å…· - é€‰æ‹©é€‰å®šADæˆ–JLæ§åˆ¶å™¨è‡ªåŠ¨æ’­æ”¾ (20é‡‘å¸)
 /// </summary>
 [CreateAssetMenu(fileName = "Auto Play Item", menuName = "Shop/Items/Auto Play")]
 public class AutoPlayItem : ItemEffect
 {
-    [Header("µÀ¾ßĞ§¹û")]
+    [Header("é“å…·æ•ˆæœ")]
     [Range(0.8f, 1.0f)]
-    public float autoPlayAccuracy = 0.95f;  // ×Ô¶¯ÓÎÍæµÄ×¼È·ÂÊ
+    public float autoPlayAccuracy = 0.95f;  // è‡ªåŠ¨æ’­æ”¾å‡†ç¡®ç‡
 
-    [Header("Ä¿±êÑ¡Ôñ")]
+    [Header("ç›®æ ‡é€‰æ‹©")]
     public ControllerType targetController = ControllerType.Auto;
 
     public enum ControllerType
     {
-        Auto,       // ×Ô¶¯Ñ¡Ôñ£¨»ùÓÚ±íÏÖ£©
-        AD,         // Ö¸¶¨AD¿ØÖÆÆ÷
-        JL,         // Ö¸¶¨JL¿ØÖÆÆ÷
-        Random      // Ëæ»úÑ¡Ôñ
+        Auto,       // è‡ªåŠ¨é€‰æ‹©ï¼ˆåŸºäºç­–ç•¥ï¼‰
+        AD,         // æŒ‡å®šADæ§åˆ¶å™¨
+        JL,         // æŒ‡å®šJLæ§åˆ¶å™¨
+        Random      // éšæœºé€‰æ‹©
     }
 
-    [Header("×Ô¶¯Ñ¡Ôñ²ßÂÔ")]
+    [Header("è‡ªåŠ¨é€‰æ‹©ç­–ç•¥")]
     public AutoSelectStrategy autoSelectStrategy = AutoSelectStrategy.MostFails;
 
     public enum AutoSelectStrategy
     {
-        MostFails,      // Ê§°Ü´ÎÊı×î¶àµÄ
-        LowestSuccess,  // ³É¹¦´ÎÊı×îÉÙµÄ
-        LowestRatio     // ³É¹¦ÂÊ×îµÍµÄ
+        MostFails,      // å¤±è´¥æ¬¡æ•°æœ€å¤š
+        LowestSuccess,  // æˆåŠŸæ¬¡æ•°æœ€å°‘çš„
+        LowestRatio     // æˆåŠŸç‡æœ€ä½çš„
     }
 
     private void OnEnable()
     {
-        itemName = "×Ô¶¯Ñİ×à";
-        itemDescription = "ÈÃÒ»¸ö½ÇÉ«×Ô¶¯Íê³É°´¼ü";
+        itemName = "è‡ªåŠ¨æ’­æ”¾";
+        itemDescription = "è®©ä¸€ä¸ªè§’è‰²è‡ªåŠ¨å®ŒæˆæŒ‰é”®";
         itemPrice = 20;
-        isConsumable = true;  // ¿ÉÒÔ¶à´Î¹ºÂò
         isPermanent = true;
     }
 
     public override void OnPurchase()
     {
-        Debug.Log($"¹ºÂòÁË {itemName}");
+        Debug.Log($"è´­ä¹°äº† {itemName}");
 
-        // »ñÈ¡Ä¿±ê¿ØÖÆÆ÷
+        // è·å–ç›®æ ‡æ§åˆ¶å™¨
         RhythmKeyControllerBase selectedController = GetTargetController();
 
         if (selectedController == null)
         {
-            Debug.LogWarning("Î´ÕÒµ½¿ÉÓÃµÄ¿ØÖÆÆ÷£¡");
-            // ÍË»¹½ğ±Ò
+            Debug.LogWarning("æœªæ‰¾åˆ°å¯ç”¨çš„ç›®æ ‡æ§åˆ¶å™¨");
+            // é€€è¿˜é‡‘å¸
             if (PlayerDataManager.Instance != null)
             {
                 PlayerDataManager.Instance.AddPlayerGold(itemPrice);
@@ -60,34 +59,34 @@ public class AutoPlayItem : ItemEffect
             return;
         }
 
-        // ÎªÑ¡ÖĞµÄ¿ØÖÆÆ÷ÆôÓÃ×Ô¶¯Ä£Ê½
+        // ä¸ºé€‰ä¸­çš„æ§åˆ¶å™¨å¯ç”¨è‡ªåŠ¨æ¨¡å¼
         selectedController.EnableAutoPlay(autoPlayAccuracy);
 
-        // ±£´æ¸Ã¿ØÖÆÆ÷µÄ×Ô¶¯Ñİ×à×´Ì¬
+        // ä¿å­˜æ¯ä¸ªæ§åˆ¶å™¨è‡ªåŠ¨æ’­æ”¾çŠ¶æ€
         string prefKey = $"AutoPlay_{selectedController.keyConfigPrefix}";
         PlayerPrefs.SetInt(prefKey + "_Enabled", 1);
         PlayerPrefs.SetFloat(prefKey + "_Accuracy", autoPlayAccuracy);
         PlayerPrefs.Save();
 
-        Debug.Log($"ÒÑÎª {selectedController.keyConfigPrefix} ¿ØÖÆÆ÷ÆôÓÃ×Ô¶¯Ñİ×àÄ£Ê½");
+        Debug.Log($"å·²ä¸º {selectedController.keyConfigPrefix} æ§åˆ¶å™¨å¯ç”¨è‡ªåŠ¨æ’­æ”¾æ¨¡å¼");
     }
 
     private RhythmKeyControllerBase GetTargetController()
     {
-        // ²éÕÒËùÓĞ¿ØÖÆÆ÷
+        // æŸ¥æ‰¾æ‰€æœ‰æ§åˆ¶å™¨
         ADController adController = FindObjectOfType<ADController>();
         JLController jlController = FindObjectOfType<JLController>();
 
-        // ´´½¨¿ÉÓÃ¿ØÖÆÆ÷ÁĞ±í
+        // åˆ›å»ºå¯ç”¨æ§åˆ¶å™¨åˆ—è¡¨
         List<RhythmKeyControllerBase> availableControllers = new List<RhythmKeyControllerBase>();
 
-        // ¼ì²éAD¿ØÖÆÆ÷
+        // æ·»åŠ ADæ§åˆ¶å™¨
         if (adController != null && !IsAutoPlayEnabled(adController))
         {
             availableControllers.Add(adController);
         }
 
-        // ¼ì²éJL¿ØÖÆÆ÷
+        // æ·»åŠ JLæ§åˆ¶å™¨
         if (jlController != null && !IsAutoPlayEnabled(jlController))
         {
             availableControllers.Add(jlController);
@@ -95,11 +94,11 @@ public class AutoPlayItem : ItemEffect
 
         if (availableControllers.Count == 0)
         {
-            Debug.LogWarning("Ã»ÓĞ¿ÉÓÃµÄ¿ØÖÆÆ÷£¨¶¼ÒÑÆôÓÃ×Ô¶¯Ä£Ê½»òÎ´ÕÒµ½£©");
+            Debug.LogWarning("æ²¡æœ‰å¯ç”¨çš„æ§åˆ¶å™¨ï¼šæ‰€æœ‰æ§åˆ¶å™¨å·²åœ¨è‡ªåŠ¨æ¨¡å¼æˆ–æœªæ‰¾åˆ°");
             return null;
         }
 
-        // ¸ù¾İÑ¡ÔñÄ£Ê½·µ»Ø¿ØÖÆÆ÷
+        // æ ¹æ®é€‰æ‹©æ¨¡å¼è¿”å›æ§åˆ¶å™¨
         switch (targetController)
         {
             case ControllerType.AD:
@@ -154,27 +153,27 @@ public class AutoPlayItem : ItemEffect
     {
         string targetDesc = targetController switch
         {
-            ControllerType.AD => "AD¿ØÖÆÆ÷£¨A/D¼ü£©",
-            ControllerType.JL => "JL¿ØÖÆÆ÷£¨J/L¼ü£©",
-            ControllerType.Random => "Ëæ»úÒ»¸ö¿ØÖÆÆ÷",
+            ControllerType.AD => "ADæ§åˆ¶å™¨ï¼ˆA/Dé”®ï¼‰",
+            ControllerType.JL => "JLæ§åˆ¶å™¨ï¼ˆJ/Lé”®ï¼‰",
+            ControllerType.Random => "éšæœºä¸€ä¸ªæ§åˆ¶å™¨",
             ControllerType.Auto => autoSelectStrategy switch
             {
-                AutoSelectStrategy.MostFails => "Ê§°Ü×î¶àµÄ¿ØÖÆÆ÷",
-                AutoSelectStrategy.LowestSuccess => "³É¹¦×îÉÙµÄ¿ØÖÆÆ÷",
-                AutoSelectStrategy.LowestRatio => "³É¹¦ÂÊ×îµÍµÄ¿ØÖÆÆ÷",
-                _ => "×Ô¶¯Ñ¡ÔñµÄ¿ØÖÆÆ÷"
+                AutoSelectStrategy.MostFails => "å¤±è´¥æœ€å¤šçš„æ§åˆ¶å™¨",
+                AutoSelectStrategy.LowestSuccess => "æˆåŠŸæœ€å°‘çš„æ§åˆ¶å™¨",
+                AutoSelectStrategy.LowestRatio => "æˆåŠŸç‡æœ€ä½çš„æ§åˆ¶å™¨",
+                _ => "è‡ªåŠ¨é€‰æ‹©çš„æ§åˆ¶å™¨"
             },
-            _ => "Ò»¸ö¿ØÖÆÆ÷"
+            _ => "ä¸€ä¸ªæ§åˆ¶å™¨"
         };
 
-        return $"ÈÃ{targetDesc}×Ô¶¯Íê³É°´¼ü£¬×¼È·ÂÊ {autoPlayAccuracy * 100}%";
+        return $"è®©{targetDesc}è‡ªåŠ¨å®ŒæˆæŒ‰é”®ï¼Œå‡†ç¡®ç‡ {autoPlayAccuracy * 100}%";
     }
 
     public override bool CanPurchase()
     {
         if (!base.CanPurchase()) return false;
 
-        // ¼ì²éÊÇ·ñ»¹ÓĞÎ´ÆôÓÃ×Ô¶¯Ä£Ê½µÄ¿ØÖÆÆ÷
+        // æ£€æŸ¥æ˜¯å¦æœ‰æœªå¯ç”¨è‡ªåŠ¨æ¨¡å¼çš„æ§åˆ¶å™¨
         ADController adController = FindObjectOfType<ADController>();
         JLController jlController = FindObjectOfType<JLController>();
 
@@ -184,26 +183,26 @@ public class AutoPlayItem : ItemEffect
         return adAvailable || jlAvailable;
     }
 
-    // »ñÈ¡µ±Ç°ÓÎÏ·ÖĞËùÓĞ¿ØÖÆÆ÷µÄ×´Ì¬£¨ÓÃÓÚUIÏÔÊ¾£©
+    // è·å–å½“å‰æ¸¸æˆä¸­æ‰€æœ‰æ§åˆ¶å™¨çŠ¶æ€ï¼ˆç”¨äºUIæ˜¾ç¤ºï¼‰
     public string GetControllersStatus()
     {
         ADController adController = FindObjectOfType<ADController>();
         JLController jlController = FindObjectOfType<JLController>();
 
-        string status = "¿ØÖÆÆ÷×´Ì¬:\n";
+        string status = "æ§åˆ¶å™¨çŠ¶æ€:\n";
 
         if (adController != null)
         {
             bool adAuto = IsAutoPlayEnabled(adController);
-            status += $"AD (A/D¼ü): {(adAuto ? "×Ô¶¯" : "ÊÖ¶¯")} - ";
-            status += $"³É¹¦{adController.successCount}´Î£¬Ê§°Ü{adController.GetCurrentFailCount()}´Î\n";
+            status += $"AD (A/Dé”®): {(adAuto ? "è‡ªåŠ¨" : "æ‰‹åŠ¨")} - ";
+            status += $"æˆåŠŸ{adController.successCount}æ¬¡ï¼Œå¤±è´¥{adController.GetCurrentFailCount()}æ¬¡\n";
         }
 
         if (jlController != null)
         {
             bool jlAuto = IsAutoPlayEnabled(jlController);
-            status += $"JL (J/L¼ü): {(jlAuto ? "×Ô¶¯" : "ÊÖ¶¯")} - ";
-            status += $"³É¹¦{jlController.successCount}´Î£¬Ê§°Ü{jlController.GetCurrentFailCount()}´Î";
+            status += $"JL (J/Lé”®): {(jlAuto ? "è‡ªåŠ¨" : "æ‰‹åŠ¨")} - ";
+            status += $"æˆåŠŸ{jlController.successCount}æ¬¡ï¼Œå¤±è´¥{jlController.GetCurrentFailCount()}æ¬¡";
         }
 
         return status;
@@ -211,7 +210,7 @@ public class AutoPlayItem : ItemEffect
 
     public override void ResetEffect()
     {
-        // Çå³ıËùÓĞ×Ô¶¯Ñİ×àÉèÖÃ
+        // æ¸…é™¤æ‰€æœ‰è‡ªåŠ¨æ’­æ”¾è®¾ç½®
         string[] prefixes = { "AD", "JL" };
         foreach (string prefix in prefixes)
         {

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 664c614f91881d24793bb4e4b1171f1a, type: 3}
+  m_Name: Auto Play Item
+  m_EditorClassIdentifier: 
+  itemName: "\u81EA\u52A8\u64AD\u653E"
+  itemDescription: "\u8BA9\u4E00\u4E2A\u89D2\u8272\u81EA\u52A8\u5B8C\u6210\u6309\u952E"
+  itemIcon: {fileID: 21300000, guid: 040878feb016d844a939ebaeb00646fe, type: 3}
+  itemPrice: 20
+  isPermanent: 1
+  autoPlayAccuracy: 0.95
+  targetController: 0
+  autoSelectStrategy: 0

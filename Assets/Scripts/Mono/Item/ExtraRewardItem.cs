@@ -1,39 +1,39 @@
 using UnityEngine;
 
 /// <summary>
-/// Íê³É»ñµÃ¶îÍâ´òÉÍµÀ¾ß (5½ğ±Ò)
+/// å®Œæˆåè·å¾—é¢å¤–å¥–åŠ±é“å…· (5é‡‘å¸)
 /// </summary>
 [CreateAssetMenu(fileName = "Extra Reward Item", menuName = "Shop/Items/Extra Reward")]
 public class ExtraRewardItem : ItemEffect
 {
-    [Header("µÀ¾ßĞ§¹û")]
-    public int extraCoins = 5;  // ¶îÍâµôÂäµÄ½ğ±ÒÊıÁ¿
+    [Header("é“å…·æ•ˆæœ")]
+    public int extraCoins = 5;  // é¢å¤–è·å¾—çš„é‡‘å¸æ•°é‡
 
     private void OnEnable()
     {
-        itemName = "¶îÍâ´òÉÍ";
-        itemDescription = "Íê³Éºó»ñµÃ¶îÍâ½ğ±Ò";
+        itemName = "é¢å¤–å¥–åŠ±";
+        itemDescription = "å®Œæˆåè·å¾—é¢å¤–é‡‘å¸";
         itemPrice = 5;
-        isConsumable = true;  // Ã¿´ÎÊ¹ÓÃ¶¼ĞèÒª¹ºÂò
-        isPermanent = false;  // Ò»´ÎĞÔĞ§¹û
+     
+        isPermanent = true;  // ä¸€æ¬¡æ€§æ•ˆæœ
     }
 
     public override void OnPurchase()
     {
-        Debug.Log($"¹ºÂòÁË {itemName}£¬Íê³Éºó½«»ñµÃ {extraCoins} ¸ö¶îÍâ½ğ±Ò");
+        Debug.Log($"è´­ä¹°äº† {itemName}ï¼Œå®Œæˆåå°†è·å¾— {extraCoins} ä¸ªé¢å¤–é‡‘å¸");
 
-        // ²éÕÒ½ø¶ÈÌõ¿ØÖÆÆ÷
+        // æŸ¥æ‰¾è¿›åº¦æ¡æ§åˆ¶å™¨
         ProgressBarController progressBar = FindObjectOfType<ProgressBarController>();
 
         if (progressBar != null)
         {
-            // Ôö¼ÓµôÂäµÄ½ğ±ÒÊıÁ¿
+            // å¢åŠ å½“å‰çš„é‡‘å¸å¥–åŠ±
             progressBar.numberOfCoins += extraCoins;
-            Debug.Log($"½ğ±ÒµôÂäÊıÁ¿Ôö¼Óµ½: {progressBar.numberOfCoins}");
+            Debug.Log($"ç©å®¶çš„é‡‘å¸å¥–åŠ±å¢åŠ åˆ°: {progressBar.numberOfCoins}");
         }
         else
         {
-            // ±£´æĞ§¹û¹©ºóĞøÊ¹ÓÃ
+            // ä¿å­˜æ•ˆæœä¾›åç»­ä½¿ç”¨
             int currentExtra = PlayerPrefs.GetInt("ExtraRewardCoins", 0);
             PlayerPrefs.SetInt("ExtraRewardCoins", currentExtra + extraCoins);
             PlayerPrefs.Save();
@@ -42,12 +42,12 @@ public class ExtraRewardItem : ItemEffect
 
     public override string GetDetailedDescription()
     {
-        return $"Íê³É¹Ø¿¨ºó¶îÍâ»ñµÃ {extraCoins} ¸ö½ğ±Ò";
+        return $"å®Œæˆå…³å¡é¢å¤–è·å¾— {extraCoins} é‡‘å¸";
     }
 
     public override bool IsActive()
     {
-        // ÕâÊÇÒ»´ÎĞÔµÀ¾ß£¬¹ºÂòºóÁ¢¼´ÉúĞ§
+        // è¿™æ˜¯ä¸€æ¬¡æ€§é“å…·ï¼Œè´­ä¹°åç«‹å³ç”Ÿæ•ˆ
         return true;
     }
 }
