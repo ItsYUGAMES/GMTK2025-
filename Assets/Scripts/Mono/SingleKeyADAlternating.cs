@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.Events;
-
+using UnityEngine.SceneManagement;
 public class SingleKeyADAlternating : RhythmKeyControllerBase
 {
     public UnityEvent onADKeyFailed;
     public UnityEvent onADKeySucceeded;
     public PauseManager pauseManager;
-
+    public GameManager gameManager;
     void Reset()
     {
         keyConfig.primaryKey = KeyCode.A;
@@ -17,7 +17,7 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
     // 只检测A键输入
     protected override void HandlePlayerInput()
     {
-        if (isGameEnded) return;
+        if (isGameEnded || isPaused) return;  // 添加isPaused检查
         if (Input.GetKeyDown(keyConfig.primaryKey))
             OnKeyPressed(keyConfig.primaryKey);
     }
@@ -67,6 +67,11 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
         onADKeyFailed?.Invoke();
     }
 
+    protected override void OnGameFail()
+    {
+        SceneManager.LoadScene("Fail");
+    }
+
     // 重写SetKeyColor：只处理主键
     protected override void SetKeyColor(KeyCode key, Color color)
     {
@@ -97,4 +102,6 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
         if (primaryKeyColorCoroutine != null) StopCoroutine(primaryKeyColorCoroutine);
         primaryKeyColorCoroutine = StartCoroutine(ShowColorFeedback(primaryKeySpriteRenderer, color));
     }
+    
+    
 }

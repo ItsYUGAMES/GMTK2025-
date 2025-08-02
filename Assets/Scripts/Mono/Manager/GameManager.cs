@@ -12,6 +12,8 @@ public class GameManager : MonoBehaviour
     [Header("进度条设置")]
     public ProgressBarController progressBar; // 进度条引用
 
+    [Header("失败管理")]
+    public FailManager failManager;
     public static GameManager Instance { get; private set; }
     private int currentLevel = 1; // 当前关卡，基于场景位置
     [Header("游戏模式")]
@@ -53,6 +55,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         CheckGameplayScene();
+       
     }
 
     void OnEnable()
@@ -71,6 +74,7 @@ public class GameManager : MonoBehaviour
     
         // 控制IntroManager的启用状态
         IntroManager introManager = GetComponent<IntroManager>();
+        failManager = GetComponent<FailManager>();
         if (introManager != null)
         {
             if (scene.name == "Intro")
@@ -82,6 +86,18 @@ public class GameManager : MonoBehaviour
             {
                 introManager.enabled = false;
                 Debug.Log("IntroManager已禁用");
+            }
+        }
+
+        if (failManager!=null)
+        {
+            if (scene.name=="Fail")
+            {
+                failManager.enabled = true;
+            }
+            else
+            {
+                failManager.enabled = false;
             }
         }
     }
@@ -136,4 +152,6 @@ public class GameManager : MonoBehaviour
         SetSingleMode(false);
         LoadScene("Intro");
     }
+
+    
 }

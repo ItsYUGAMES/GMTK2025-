@@ -188,7 +188,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &165956836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,7 +293,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &404784234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -314,8 +314,8 @@ MonoBehaviour:
   secondaryKeyPrefab: {fileID: 899813001}
   primaryKeySpawnPosition: {x: -2, y: 0, z: 0}
   secondaryKeySpawnPosition: {x: 2, y: 0, z: 0}
-  normalKeyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  highlightKeyColor: {r: 1, g: 1, b: 1, a: 1}
+  normalKeyColor: {r: 1, g: 1, b: 1, a: 1}
+  highlightKeyColor: {r: 1, g: 0.89524543, b: 0, a: 1}
   successKeyColor: {r: 0, g: 1, b: 0, a: 1}
   missKeyColor: {r: 1, g: 0, b: 0, a: 1}
   feedbackDisplayDuration: 0.2
@@ -564,7 +564,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &899813002
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -748,7 +748,12 @@ MonoBehaviour:
   spawnForceMax: 6
   screenTopOffset: 1
   shopManager: {fileID: 0}
+  upObject: {fileID: 0}
+  downObject: {fileID: 0}
+  targetY: -490
+  moveSpeed: 2
   gameManager: {fileID: 0}
+  levelCompletedSFX: {fileID: 0}
 --- !u!114 &927205890
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -871,7 +876,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1383122701
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1833,8 +1838,11 @@ MonoBehaviour:
   secondaryKey: 100
   requiredSuccessCount: 4
   beatInterval: 1
-  primaryKeyRenderer: {fileID: 1383122701}
-  secondaryKeyRenderer: {fileID: 899813002}
+  isSingleKeyMode: 0
+  primaryKeyPrefab: {fileID: 0}
+  secondaryKeyPrefab: {fileID: 0}
+  primaryKeyPosition: {x: 0, y: 0, z: 0}
+  secondaryKeyPosition: {x: 0, y: 0, z: 0}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   successColor: {r: 0, g: 1, b: 0, a: 1}
@@ -1852,6 +1860,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelScenes: []
   progressBar: {fileID: 0}
+  failManager: {fileID: 0}
+  isSingleMode: 0
 --- !u!114 &1909945109
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1889,7 +1899,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2070399159}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 61f51b8da598f4f4aa6db4d901a4f30a, type: 3}
   m_Name: 
@@ -1923,6 +1933,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   pauseManager: {fileID: 0}
+  gameManager: {fileID: 0}
 --- !u!4 &2070399161
 Transform:
   m_ObjectHideFlags: 0

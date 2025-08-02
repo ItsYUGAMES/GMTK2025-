@@ -278,6 +278,7 @@ GameObject:
   - component: {fileID: 1192094722}
   - component: {fileID: 1192094724}
   - component: {fileID: 1192094725}
+  - component: {fileID: 1192094726}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -299,6 +300,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelScenes: []
   progressBar: {fileID: 0}
+  failManager: {fileID: 1192094726}
   isSingleMode: 0
 --- !u!4 &1192094723
 Transform:
@@ -359,6 +361,24 @@ MonoBehaviour:
   tremorIntensity: 0.1
   tremorSpeed: 10
   tremorDuration: 2
+--- !u!114 &1192094726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192094721}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc9d1f22f83d2214e8076dbabacc1aa6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  upObject: {fileID: 0}
+  downObject: {fileID: 0}
+  moveSpeed: 2
+  failSFX: {fileID: 8300000, guid: e810d2a3db34ede4fb237a05bfd75a63, type: 3}
+  doorCloseSFX: {fileID: 8300000, guid: 532df27fa88619e47bfefd946a5a116b, type: 3}
+  audioDelay: 3
 --- !u!1 &1374122159
 GameObject:
   m_ObjectHideFlags: 0

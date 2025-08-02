@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class IntroManager : MonoBehaviour
 {
@@ -118,6 +119,7 @@ public class IntroManager : MonoBehaviour
 
         yield return new WaitForSeconds(1.0f);
         Debug.Log("剧情播放完成");
+        SceneManager.LoadScene("Template");
     }
 
     IEnumerator MoveBothDragonsWithApplause()
@@ -138,7 +140,7 @@ public class IntroManager : MonoBehaviour
 
         // 开始龙头移动
         MoveBothDragons();
-
+        
         yield return null;
     }
 

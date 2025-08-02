@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class FailManager : MonoBehaviour
 {
     [Header("移动设置")]
@@ -26,6 +26,13 @@ public class FailManager : MonoBehaviour
         }
     }
 
+    
+    public void RestartGame()
+    {
+        Debug.Log("按钮被点击了！");
+        Debug.Log("重启游戏，返回GameStart场景");
+        SceneManager.LoadScene("GameStart");
+    }
     private void FindUpAndDownObjects()
     {
         if (upObject == null)
@@ -100,7 +107,7 @@ public class FailManager : MonoBehaviour
         {
             AudioSource close = SFXManager.Instance.GetAudioSource();
             close.clip = doorCloseSFX;
-            close.time = 0.4f;
+            close.time = 0.5f;
             SFXManager.Instance.PlaySFX(doorCloseSFX);
         }
 
