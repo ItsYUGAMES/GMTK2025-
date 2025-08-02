@@ -1,50 +1,63 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using Random = UnityEngine.Random; // 明确使用 Unity 的 Random
 
 /// <summary>
-///       ƻ  ࣬ʵ  IPausable ӿڣ ֧  PauseManagerȫ  / ֲ   ͣ    
+/// 基础节奏控制器，支持道具系统
 /// </summary>
 public abstract class RhythmKeyControllerBase : MonoBehaviour
 {
-    [Header("  λ    ")]
+    [Header("按键配置")]
     public KeyConfig keyConfig = new KeyConfig();
     public string keyConfigPrefix = "Player";
 
-    [Header("Prefab    ")]
+    [Header("Prefab设置")]
     public GameObject primaryKeyPrefab;
     public GameObject secondaryKeyPrefab;
     public Vector3 primaryKeySpawnPosition;
     public Vector3 secondaryKeySpawnPosition;
 
-    [Header(" Ӿ     ")]
+    [Header("视觉反馈")]
     public Color normalKeyColor = Color.gray;
     public Color highlightKeyColor = Color.white;
     public Color successKeyColor = Color.green;
     public Color missKeyColor = Color.red;
     public float feedbackDisplayDuration = 0.2f;
 
-    [Header("       ")]
+    [Header("节奏设置")]
     public float beatInterval = 1.0f;
     public float successWindow = 0.4f;
     public bool infiniteLoop = true;
 
-    // 修改字段声明部分
     [Header("关卡/失败设置")]
     public int successToPass = 10;
     public int failToLose = 5;
     public int needConsecutiveSuccessToResume = 4;
 
-   
-    // ״̬  
+    [Header("道具效果")]
+    private int baseFailToLose;           // 储存原始的失败上限
+    private float baseSuccessWindow;      // 储存原始的成功窗口
+    private float baseBeatInterval;       // 储存原始的节拍间隔
+
+    [Header("道具模式")]
+    private bool isHoldMode = false;
+    private float holdDuration = 0.5f;
+    private bool isAutoPlay = false;
+    private float autoPlayAccuracy = 0.95f;
+    private float holdStartTime = 0f;
+    private bool isHolding = false;
+    private KeyCode currentHoldKey = KeyCode.None;
+
+    // 状态变量
     public int successCount = 0;
     protected int failCount = 0;
     protected bool isGameEnded = false;
     public bool isPaused = false;
-    protected bool pausedByManager = false;   //   PauseManager  ͣ
+    protected bool pausedByManager = false;
     public int consecutiveSuccessOnFailedKey = 0;
 
-    //     ʱ
+    // 组件引用
     protected SpriteRenderer primaryKeySpriteRenderer;
     protected SpriteRenderer secondaryKeySpriteRenderer;
     protected Camera mainCamera;
@@ -62,11 +75,15 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
 
     public Action OnLevelPassed;
 
-    // ==========          ==========
+    // ========== 生命周期方法 ==========
     protected virtual void Awake()
     {
-        
         keyConfig.Load(keyConfigPrefix);
+
+        // 保存基础值
+        baseFailToLose = failToLose;
+        baseSuccessWindow = successWindow;
+        baseBeatInterval = beatInterval;
 
         mainCamera = Camera.main ?? FindObjectOfType<Camera>();
         if (mainCamera != null) originalCameraColor = mainCamera.backgroundColor;
@@ -88,74 +105,158 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             originalAnimatorSpeeds[i] = allAnimators[i].speed;
     }
 
-    protected virtual void OnDestroy()
-    {
-        
-    }
-
     protected virtual void Start()
     {
+        // 应用待处理的道具效果
+        ApplyPendingItemEffects();
+
+        // 检查是否启用了特殊模式
+        if (PlayerPrefs.GetInt("HoldModeEnabled", 0) == 1)
+        {
+            EnableHoldMode(PlayerPrefs.GetFloat("HoldDuration", 0.5f));
+        }
+
+        if (PlayerPrefs.GetInt("AutoPlayEnabled", 0) == 1)
+        {
+            EnableAutoPlay(PlayerPrefs.GetFloat("AutoPlayAccuracy", 0.95f));
+        }
+
         SetAllKeysColor(normalKeyColor);
         StartNextBeat();
     }
 
-    // ========== IPausableʵ   ==========
+    protected virtual void OnDestroy()
+    {
+        // 清理资源
+    }
+
+    // ========== 道具效果应用 ==========
+    private void ApplyPendingItemEffects()
+    {
+        // 应用额外生命效果
+        int pendingExtraLives = PlayerPrefs.GetInt("PendingExtraLives", 0);
+        if (pendingExtraLives > 0)
+        {
+            failToLose += pendingExtraLives;
+            Debug.Log($"[{keyConfigPrefix}] 应用了 {pendingExtraLives} 个待处理的额外生命，当前失败上限: {failToLose}");
+
+            PlayerPrefs.SetInt("PendingExtraLives", 0);
+            PlayerPrefs.Save();
+        }
+
+        // 应用成功窗口加成
+        float windowBonus = PlayerPrefs.GetFloat("SuccessWindowBonus", 0f);
+        if (windowBonus > 0)
+        {
+            successWindow += windowBonus;
+            Debug.Log($"[{keyConfigPrefix}] 应用了成功窗口加成 {windowBonus} 秒，当前成功窗口: {successWindow}");
+        }
+
+        // 应用速度效果
+        float savedSpeedMultiplier = PlayerPrefs.GetFloat("SpeedMultiplier", 1.0f);
+        if (savedSpeedMultiplier != 1.0f)
+        {
+            beatInterval = baseBeatInterval / savedSpeedMultiplier;
+            Debug.Log($"[{keyConfigPrefix}] 应用了速度倍数 {savedSpeedMultiplier}，当前节拍间隔: {beatInterval}");
+        }
+    }
+
+    // ========== IPausable实现 ==========
     public void SetPaused(bool paused)
     {
         pausedByManager = paused;
-        //    趯  ͬ     ᣬ       ﴦ   allAnimators
         if (paused)
             PauseAllAnimations();
         else
             ResumeAllAnimations();
     }
 
-    // ==========   ѭ   ==========
+    // ========== 主循环 ==========
     protected virtual void Update()
     {
         if (pausedByManager) return;
         if (isGameEnded) return;
 
-        // 移除暂停状态的特殊处理，让脚本正常运行
-        // if (isPaused)
-        // {
-        //     HandlePauseRecoveryInput();
-        //     CheckBeatTiming();
-        //     return;
-        // }
-
         CheckBeatTiming();
         HandlePlayerInput();
-    
-        // 暂停状态下也处理恢复输入
+
         if (isPaused)
         {
             HandlePauseRecoveryInput();
         }
     }
 
-    // ==========         ==========
+    // ========== 输入处理 ==========
     protected virtual void HandlePlayerInput()
     {
         if (isGameEnded) return;
-        // 移除 isPaused 检查，让暂停状态下也能正常输入
+        if (isAutoPlay) return; // 自动模式下不处理玩家输入
 
-        if (Input.GetKeyDown(keyConfig.primaryKey))
-            OnKeyPressed(keyConfig.primaryKey);
-        else if (Input.GetKeyDown(keyConfig.secondaryKey))
-            OnKeyPressed(keyConfig.secondaryKey);
+        if (isHoldMode)
+        {
+            HandleHoldInput();
+        }
+        else
+        {
+            // 原有的按键逻辑
+            if (Input.GetKeyDown(keyConfig.primaryKey))
+                OnKeyPressed(keyConfig.primaryKey);
+            else if (Input.GetKeyDown(keyConfig.secondaryKey))
+                OnKeyPressed(keyConfig.secondaryKey);
+        }
+    }
+
+    // 处理长按输入
+    private void HandleHoldInput()
+    {
+        // 检测主键按下
+        if (Input.GetKeyDown(keyConfig.primaryKey) && !isHolding && expectedKey == keyConfig.primaryKey)
+        {
+            isHolding = true;
+            holdStartTime = Time.time;
+            currentHoldKey = keyConfig.primaryKey;
+            ShowFeedback(keyConfig.primaryKey, highlightKeyColor);
+        }
+
+        // 检测副键按下
+        if (Input.GetKeyDown(keyConfig.secondaryKey) && !isHolding && expectedKey == keyConfig.secondaryKey)
+        {
+            isHolding = true;
+            holdStartTime = Time.time;
+            currentHoldKey = keyConfig.secondaryKey;
+            ShowFeedback(keyConfig.secondaryKey, highlightKeyColor);
+        }
+
+        // 检测按键释放
+        if (isHolding && Input.GetKeyUp(currentHoldKey))
+        {
+            isHolding = false;
+            float holdTime = Time.time - holdStartTime;
+
+            if (holdTime >= holdDuration && waitingForInput && currentHoldKey == expectedKey)
+            {
+                OnBeatSuccess();
+            }
+            else
+            {
+                ShowFeedback(currentHoldKey, missKeyColor);
+                if (waitingForInput)
+                {
+                    OnBeatFailed();
+                }
+            }
+            currentHoldKey = KeyCode.None;
+        }
     }
 
     protected virtual void HandlePauseRecoveryInput()
     {
-        // 暂停状态下只响应当前期望的键
         if (Input.GetKeyDown(expectedKey) && waitingForInput)
         {
-            OnBeatSuccess(); // 这会增加 consecutiveSuccessOnFailedKey 并检查是否达到恢复条件
+            OnBeatSuccess();
         }
         else if ((Input.GetKeyDown(keyConfig.primaryKey) || Input.GetKeyDown(keyConfig.secondaryKey)) && waitingForInput)
         {
-            // 按错键时重置恢复进度
             if (Input.GetKeyDown(expectedKey) == false)
             {
                 consecutiveSuccessOnFailedKey = 0;
@@ -164,17 +265,11 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         }
     }
 
-    protected bool IsOtherControllerKeyPressed()
-    {
-        KeyCode otherKey = (expectedKey == keyConfig.primaryKey) ? keyConfig.secondaryKey : keyConfig.primaryKey;
-        return Input.GetKeyDown(otherKey);
-    }
-
-  
+    // ========== 节奏控制 ==========
     protected virtual void StartNextBeat()
     {
-        if (pausedByManager) return;  // 只阻止管理器暂停，允许失败暂停继续节拍
-    
+        if (pausedByManager) return;
+
         Debug.Log("NextBeat");
         expectedKey = (beatCounter % 2 == 0) ? keyConfig.primaryKey : keyConfig.secondaryKey;
         currentBeatStartTime = Time.time;
@@ -214,21 +309,18 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         waitingForInput = false;
         ShowFeedback(expectedKey, successKeyColor);
 
-        // 如果在暂停状态下成功，增加恢复计数
         if (isPaused)
         {
             consecutiveSuccessOnFailedKey++;
             Debug.Log($"暂停恢复进度: {consecutiveSuccessOnFailedKey}/{needConsecutiveSuccessToResume}");
-        
-            // 如果达到恢复要求，恢复游戏
+
             if (consecutiveSuccessOnFailedKey >= needConsecutiveSuccessToResume)
             {
                 ResumeFromPause();
-                return; // 恢复后会重启协程，所以这里直接返回
+                return;
             }
         }
 
-        // 正常重启协程
         if (beatCoroutine != null) StopCoroutine(beatCoroutine);
         beatCoroutine = StartCoroutine(WaitForNextBeat());
     }
@@ -237,11 +329,10 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     {
         if (isGameEnded) return;
 
-        if(!isPaused)failCount++;
+        if (!isPaused) failCount++;
         waitingForInput = false;
         ShowFeedback(expectedKey, missKeyColor);
 
-        // 如果在暂停状态下失败，重置恢复计数
         if (isPaused)
         {
             consecutiveSuccessOnFailedKey = 0;
@@ -249,7 +340,6 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         }
         else
         {
-            // 只有在非暂停状态下才进入暂停
             EnterPauseForFailure();
         }
 
@@ -260,17 +350,21 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             return;
         }
 
-        // 重启协程
         if (beatCoroutine != null) StopCoroutine(beatCoroutine);
         beatCoroutine = StartCoroutine(WaitForNextBeat());
     }
 
+    protected virtual void OnBeatMissed()
+    {
+        OnBeatFailed();
+    }
+
+    // ========== 暂停/恢复 ==========
     protected virtual void EnterPauseForFailure()
     {
         isPaused = true;
         consecutiveSuccessOnFailedKey = 0;
-
-        SetKeyColor(expectedKey, missKeyColor); // 使用 expectedKey 替代 lastFailedKey
+        SetKeyColor(expectedKey, missKeyColor);
         Debug.Log($"[{keyConfigPrefix}] 进入暂停状态，需要连按 {expectedKey} 键 {needConsecutiveSuccessToResume} 次恢复");
     }
 
@@ -279,51 +373,119 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         Debug.Log("恢复游戏状态");
         isPaused = false;
         consecutiveSuccessOnFailedKey = 0;
-    
-        // 不需要恢复动画，因为没有暂停
-        // ResumeAllAnimations();
-    
         SetAllKeysColor(normalKeyColor);
 
-        // 正常的协程重启逻辑保持不变
         if (beatCoroutine != null) StopCoroutine(beatCoroutine);
         beatCoroutine = StartCoroutine(WaitForNextBeat());
     }
 
-    protected virtual void PauseAllAnimations()
-    {
-        for (int i = 0; i < allAnimators.Length; i++)
-        {
-            if (allAnimators[i] != null)
-                allAnimators[i].speed = 0;
-        }
-    }
-
-    protected virtual void ResumeAllAnimations()
-    {
-        for (int i = 0; i < allAnimators.Length; i++)
-        {
-            if (allAnimators[i] != null)
-                allAnimators[i].speed = originalAnimatorSpeeds[i];
-        }
-    }
-
-    protected virtual void OnBeatMissed()
-    {
-        OnBeatFailed();
-    }
-
+    // ========== 游戏结束 ==========
     protected virtual void OnGameSuccess()
     {
-        Debug.Log($"[{keyConfigPrefix}] ͨ سɹ   ");
+        Debug.Log($"[{keyConfigPrefix}] 通过成功！");
+        TriggerRoundEndEffects();
         OnLevelPassed?.Invoke();
     }
 
     protected virtual void OnGameFail()
     {
-        Debug.Log($"[{keyConfigPrefix}]   Ϸʧ ܣ ");
+        Debug.Log($"[{keyConfigPrefix}] 游戏失败！");
     }
 
+    // ========== 道具系统公共方法 ==========
+    public void AddExtraLife(int amount)
+    {
+        failToLose += amount;
+        Debug.Log($"[{keyConfigPrefix}] 增加了 {amount} 次失误机会，当前失败上限: {failToLose}");
+    }
+
+    public int GetCurrentFailLimit() => failToLose;
+    public int GetCurrentFailCount() => failCount;
+    public int GetRemainingLives() => failToLose - failCount;
+
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        beatInterval = baseBeatInterval / multiplier;
+        Debug.Log($"[{keyConfigPrefix}] 速度倍数设置为 {multiplier}，当前节拍间隔: {beatInterval}");
+    }
+
+    public void AddSuccessWindow(float additionalTime)
+    {
+        successWindow += additionalTime;
+        Debug.Log($"[{keyConfigPrefix}] 成功窗口增加 {additionalTime} 秒，当前成功窗口: {successWindow}");
+    }
+
+    public void EnableHoldMode(float duration)
+    {
+        isHoldMode = true;
+        holdDuration = duration;
+        Debug.Log($"[{keyConfigPrefix}] 启用长按模式，需要按住 {duration} 秒");
+    }
+
+    public void EnableAutoPlay(float accuracy)
+    {
+        isAutoPlay = true;
+        autoPlayAccuracy = accuracy;
+        Debug.Log($"[{keyConfigPrefix}] 启用自动游玩，准确率: {accuracy * 100}%");
+        StartCoroutine(AutoPlayRoutine());
+    }
+
+    public void ResetItemEffects()
+    {
+        failToLose = baseFailToLose;
+        successWindow = baseSuccessWindow;
+        beatInterval = baseBeatInterval;
+        isHoldMode = false;
+        isAutoPlay = false;
+        Debug.Log($"[{keyConfigPrefix}] 所有道具效果已重置");
+    }
+
+    // ========== 自动游玩协程 ==========
+    private IEnumerator AutoPlayRoutine()
+    {
+        while (isAutoPlay && !isGameEnded)
+        {
+            if (waitingForInput)
+            {
+                // 等待一个随机的时间（在成功窗口内）
+                float waitTime = Random.Range(successWindow * 0.2f, successWindow * 0.8f);
+                yield return new WaitForSeconds(waitTime);
+
+                // 根据准确率决定是否成功
+                if (Random.value < autoPlayAccuracy && waitingForInput)
+                {
+                    OnKeyPressed(expectedKey);
+                }
+            }
+            yield return null;
+        }
+    }
+
+    // ========== 回合结束效果 ==========
+    private void TriggerRoundEndEffects()
+    {
+        // 处理金币倍数持续回合
+        int remainingGoldRounds = PlayerPrefs.GetInt("GoldMultiplierRounds", 0);
+        if (remainingGoldRounds > 0)
+        {
+            remainingGoldRounds--;
+            PlayerPrefs.SetInt("GoldMultiplierRounds", remainingGoldRounds);
+
+            if (remainingGoldRounds == 0)
+            {
+                PlayerPrefs.SetFloat("GoldMultiplier", 1.0f);
+                Debug.Log("金币加成效果已结束");
+            }
+            else
+            {
+                Debug.Log($"金币加成剩余 {remainingGoldRounds} 回合");
+            }
+
+            PlayerPrefs.Save();
+        }
+    }
+
+    // ========== 协程 ==========
     protected virtual IEnumerator WaitForNextBeat()
     {
         yield return new WaitForSecondsRealtime(0.1f);
@@ -332,7 +494,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         if (infiniteLoop) StartNextBeat();
     }
 
-    // ==========  Ӿ         ==========
+    // ========== 视觉反馈 ==========
     protected virtual void ShowFeedback(KeyCode key, Color color)
     {
         if (key == keyConfig.primaryKey)
@@ -367,14 +529,13 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             yield return new WaitForSecondsRealtime(feedbackDisplayDuration);
         }
 
-        // 修改颜色恢复逻辑 - 优先显示当前节拍高亮
         if (renderer == GetKeyRenderer(expectedKey) && waitingForInput)
         {
             renderer.color = highlightKeyColor;
         }
         else if (isPaused && renderer == GetKeyRenderer(expectedKey))
         {
-            renderer.color = missKeyColor; // 使用 expectedKey 替代 lastFailedKey
+            renderer.color = missKeyColor;
         }
         else
         {
@@ -399,7 +560,6 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
             else if (key == keyConfig.secondaryKey && secondaryKeyColorCoroutine != null)
                 StopCoroutine(secondaryKeyColorCoroutine);
 
-            // 暂停状态下的特殊处理
             if (isPaused && key == expectedKey && color == normalKeyColor)
             {
                 if (waitingForInput)
@@ -428,6 +588,26 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         }
     }
 
+    // ========== 动画控制 ==========
+    protected virtual void PauseAllAnimations()
+    {
+        for (int i = 0; i < allAnimators.Length; i++)
+        {
+            if (allAnimators[i] != null)
+                allAnimators[i].speed = 0;
+        }
+    }
+
+    protected virtual void ResumeAllAnimations()
+    {
+        for (int i = 0; i < allAnimators.Length; i++)
+        {
+            if (allAnimators[i] != null)
+                allAnimators[i].speed = originalAnimatorSpeeds[i];
+        }
+    }
+
+    // ========== 其他公共方法 ==========
     public void ResetToDefaultKey()
     {
         keyConfig = new KeyConfig();

@@ -6,10 +6,12 @@ public class ProgressBarController : MonoBehaviour
 {
     public Image progressBarImage;
     public float fillDuration = 10f;
+    private float originalFillDuration; // 保存原始填充时间
 
     [Header("金币掉落设置")]
     public GameObject coinPrefab;
     public int numberOfCoins = 10;
+    private int baseNumberOfCoins; // 保存原始金币数量
     public float spawnRadius = 2f;
     public float spawnForceMin = 3f;
     public float spawnForceMax = 6f;
@@ -43,12 +45,34 @@ public class ProgressBarController : MonoBehaviour
             Debug.LogError("场景中没有找到带有 'MainCamera' 标签的摄像机！", this);
         }
 
+        // 保存原始值
+        originalFillDuration = fillDuration;
+        baseNumberOfCoins = numberOfCoins;
+
         // 自动查找Up和Down对象
         FindUpAndDownObjects();
     }
 
     void Start()
     {
+        // 检查是否有欢呼加速效果
+        if (PlayerPrefs.HasKey("CheerBoostMultiplier"))
+        {
+            float multiplier = PlayerPrefs.GetFloat("CheerBoostMultiplier", 1f);
+            fillDuration = originalFillDuration * multiplier;
+            Debug.Log($"应用欢呼加速效果，填充时间: {fillDuration} 秒");
+        }
+
+        // 检查是否有额外奖励
+        if (PlayerPrefs.HasKey("ExtraRewardCoins"))
+        {
+            int extraCoins = PlayerPrefs.GetInt("ExtraRewardCoins", 0);
+            numberOfCoins = baseNumberOfCoins + extraCoins;
+            PlayerPrefs.DeleteKey("ExtraRewardCoins"); // 使用后清除
+            PlayerPrefs.Save();
+            Debug.Log($"应用额外奖励，金币数量: {numberOfCoins}");
+        }
+
         if (progressBarImage != null)
         {
             progressBarImage.fillAmount = 0f;
@@ -120,6 +144,32 @@ public class ProgressBarController : MonoBehaviour
         }
     }
 
+    public void SetFillSpeed(float speedMultiplier)
+    {
+        fillDuration = originalFillDuration * speedMultiplier;
+        Debug.Log($"进度条填充速度已调整，新的填充时间: {fillDuration} 秒");
+
+        // 如果正在填充，重新开始以应用新速度
+        if (isFilling)
+        {
+            StopFilling();
+            StartFilling();
+        }
+    }
+
+    public void AddExtraCoins(int extraCoins)
+    {
+        numberOfCoins += extraCoins;
+        Debug.Log($"增加了 {extraCoins} 个额外金币，总金币数: {numberOfCoins}");
+    }
+
+    public void ResetToDefaults()
+    {
+        fillDuration = originalFillDuration;
+        numberOfCoins = baseNumberOfCoins;
+        Debug.Log("进度条设置已重置为默认值");
+    }
+
     IEnumerator FillProgressBarCoroutine()
     {
         float startTime = Time.time;
@@ -136,9 +186,19 @@ public class ProgressBarController : MonoBehaviour
         isFilling = false;
         Debug.Log("进度条填充完成！");
 
+        // 播放完成音效
         if (SFXManager.Instance != null && levelCompletedSFX != null)
         {
             SFXManager.Instance.PlaySFX(levelCompletedSFX);
+        }
+
+        // 应用金币倍数（如果有的话）
+        float goldMultiplier = PlayerPrefs.GetFloat("GoldMultiplier", 1.0f);
+        if (goldMultiplier > 1.0f)
+        {
+            int bonusCoins = Mathf.RoundToInt(numberOfCoins * (goldMultiplier - 1));
+            numberOfCoins += bonusCoins;
+            Debug.Log($"金币倍数 x{goldMultiplier}，额外获得 {bonusCoins} 个金币");
         }
 
         StartCoroutine(SpawnCoinsRoutine());
@@ -242,5 +302,28 @@ public class ProgressBarController : MonoBehaviour
         {
             Debug.LogError("ShopManager 未设置！");
         }
+    }
+
+    // 公共方法供外部调用
+    public float GetProgress()
+    {
+        return progressBarImage != null ? progressBarImage.fillAmount : 0f;
+    }
+
+    public bool IsFillingComplete()
+    {
+        return !isFilling && progressBarImage != null && progressBarImage.fillAmount >= 1f;
+    }
+
+    public void ResetProgress()
+    {
+        if (progressBarImage != null)
+        {
+            progressBarImage.fillAmount = 0f;
+        }
+        timer = 0f;
+        isFilling = false;
+        activeCoinsCount = 0;
+        isMoving = false;
     }
 }
