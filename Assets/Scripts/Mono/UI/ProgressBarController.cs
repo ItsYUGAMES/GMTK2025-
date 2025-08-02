@@ -27,7 +27,7 @@ public class ProgressBarController : MonoBehaviour
     public float moveSpeed = 2f;
 
     private float timer = 0f;
-    private bool isFilling = false;
+    public bool isFilling = false;
     private Camera mainCamera;
     private int activeCoinsCount = 0;
     private bool isMoving = false;
@@ -55,24 +55,33 @@ public class ProgressBarController : MonoBehaviour
 
     void Start()
     {
-        // 检查是否有欢呼加速效果
-        if (PlayerPrefs.HasKey("CheerBoostMultiplier"))
+        // 检查道具效果并应用
+        if (PlayerDataManager.Instance != null)
         {
-            float multiplier = PlayerPrefs.GetFloat("CheerBoostMultiplier", 1f);
-            fillDuration = originalFillDuration * multiplier;
-            Debug.Log($"应用欢呼加速效果，填充时间: {fillDuration} 秒");
+            // 检查是否有欢呼加速效果
+            if (PlayerDataManager.Instance.IsCheerBoostActive())
+            {
+                fillDuration = originalFillDuration * 0.7f; // 加速30%
+                Debug.Log($"应用欢呼加速效果，填充时间: {fillDuration} 秒");
+            }
+            else
+            {
+                fillDuration = originalFillDuration;
+            }
+
+            // 检查是否有额外奖励
+            if (PlayerDataManager.Instance.IsExtraRewardActive())
+            {
+                numberOfCoins = baseNumberOfCoins + 5; // 额外5个金币
+                Debug.Log($"应用额外奖励，金币数量: {numberOfCoins}");
+            }
+            else
+            {
+                numberOfCoins = baseNumberOfCoins;
+            }
         }
 
-        // 检查是否有额外奖励
-        if (PlayerPrefs.HasKey("ExtraRewardCoins"))
-        {
-            int extraCoins = PlayerPrefs.GetInt("ExtraRewardCoins", 0);
-            numberOfCoins = baseNumberOfCoins + extraCoins;
-            PlayerPrefs.DeleteKey("ExtraRewardCoins"); // 使用后清除
-            PlayerPrefs.Save();
-            Debug.Log($"应用额外奖励，金币数量: {numberOfCoins}");
-        }
-
+        // 其余初始化代码...
         if (progressBarImage != null)
         {
             progressBarImage.fillAmount = 0f;
@@ -192,14 +201,7 @@ public class ProgressBarController : MonoBehaviour
             SFXManager.Instance.PlaySFX(levelCompletedSFX);
         }
 
-        // 应用金币倍数（如果有的话）
-        float goldMultiplier = PlayerPrefs.GetFloat("GoldMultiplier", 1.0f);
-        if (goldMultiplier > 1.0f)
-        {
-            int bonusCoins = Mathf.RoundToInt(numberOfCoins * (goldMultiplier - 1));
-            numberOfCoins += bonusCoins;
-            Debug.Log($"金币倍数 x{goldMultiplier}，额外获得 {bonusCoins} 个金币");
-        }
+        
 
         StartCoroutine(SpawnCoinsRoutine());
     }

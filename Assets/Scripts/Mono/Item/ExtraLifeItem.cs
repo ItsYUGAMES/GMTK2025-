@@ -1,47 +1,37 @@
 using UnityEngine;
 
+
 /// <summary>
-/// 购买一次失败机会道具 (5金币)
+/// 额外生命道具
 /// </summary>
 [CreateAssetMenu(fileName = "Extra Life Item", menuName = "Shop/Items/Extra Life")]
 public class ExtraLifeItem : ItemEffect
 {
     [Header("道具效果")]
-    public int extraLives = 1;
+    public int extraLives = 1;  // 增加的生命数量
 
     private void OnEnable()
     {
-        itemName = "购买一次失败机会";
-        itemDescription = "增加1次失败机会";
-        itemPrice = 5;
-    
+        itemName = "额外生命";
+        itemDescription = "增加一条生命";
+        itemPrice = 10;
+
         isPermanent = true;
     }
 
     public override void OnPurchase()
     {
-        Debug.Log($"购买了 {itemName}，增加了 {extraLives} 次失败机会");
+        Debug.Log($"购买了 {itemName}，增加 {extraLives} 条生命");
 
-        RhythmKeyControllerBase[] controllers = FindObjectsOfType<RhythmKeyControllerBase>();
-
-        if (controllers.Length == 0)
+        // 通过PlayerDataManager设置效果状态
+        if (PlayerDataManager.Instance != null)
         {
-            SaveEffectForLater();
-        }
-        else
-        {
-            foreach (var controller in controllers)
-            {
-                controller.AddExtraLife(extraLives);
-            }
+            PlayerDataManager.Instance.SetExtraLifeActive(true);
         }
     }
 
-    private void SaveEffectForLater()
+    public override string GetDetailedDescription()
     {
-        int currentPending = PlayerPrefs.GetInt("PendingExtraLives", 0);
-        PlayerPrefs.SetInt("PendingExtraLives", currentPending + extraLives);
-        PlayerPrefs.Save();
-        Debug.Log($"保存了 {extraLives} 个待应用的额外生命");
+        return $"增加 {extraLives} 条额外生命";
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerDataManager : MonoBehaviour
@@ -6,7 +7,12 @@ public class PlayerDataManager : MonoBehaviour
 
     [Header("玩家数据")]
     [SerializeField] private int playerGold = 0;
-
+ 
+    [Header("道具效果状态")]
+    public bool cheerBoostActive = false;     // 欢呼加速效果
+    public bool extraRewardActive = false;
+    public bool extraLifeActive = false;
+    public bool autoPlayActive = false;
     // 金币变化事件
     public System.Action<int> OnGoldChanged;
 
@@ -65,5 +71,54 @@ public class PlayerDataManager : MonoBehaviour
         OnGoldChanged?.Invoke(playerGold);
         Debug.Log("玩家数据已重置");
     }
+    #endregion
+
+    #region 道具管理
+
+    // 道具效果管理方法
+    public void SetCheerBoostActive(bool active)
+    {
+        cheerBoostActive = active;
+        Debug.Log($"欢呼加速效果设置为: {active}");
+    }
+
+    public void SetExtraRewardActive(bool active)
+    {
+        extraRewardActive = active;
+        Debug.Log($"额外奖励效果设置为: {active}");
+    }
+
+   
+    public void SetExtraLifeActive(bool active)
+    {
+        extraLifeActive = active;
+        Debug.Log($"额外生命效果设置为: {active}");
+    }
+
+    public bool IsExtraLifeActive() => extraLifeActive;
+
+// 自动游戏效果
+    public void SetAutoPlayActive(bool active)
+    {
+        autoPlayActive = active;
+        Debug.Log($"自动游戏效果设置为: {active}");
+    }
+
+    public bool IsAutoPlayActive() => autoPlayActive;
+
+// 获取道具效果状态
+    public bool IsCheerBoostActive() => cheerBoostActive;
+    public bool IsExtraRewardActive() => extraRewardActive;
+ 
+// 重置所有道具效果
+    public void ResetAllItemEffects()
+    {
+        cheerBoostActive = false;
+        extraRewardActive = false;
+        autoPlayActive = false;
+        extraLifeActive = false;
+        Debug.Log("所有道具效果已重置");
+    }
+
     #endregion
 }

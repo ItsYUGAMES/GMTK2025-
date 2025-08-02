@@ -20,23 +20,11 @@ public class ExtraRewardItem : ItemEffect
 
     public override void OnPurchase()
     {
-        Debug.Log($"购买了 {itemName}，完成后将获得 {extraCoins} 个额外金币");
+        Debug.Log($"购买了 {itemName}，增加额外奖励");
 
-        // 查找进度条控制器
-        ProgressBarController progressBar = FindObjectOfType<ProgressBarController>();
-
-        if (progressBar != null)
+        if (PlayerDataManager.Instance != null)
         {
-            // 增加当前的金币奖励
-            progressBar.numberOfCoins += extraCoins;
-            Debug.Log($"玩家的金币奖励增加到: {progressBar.numberOfCoins}");
-        }
-        else
-        {
-            // 保存效果供后续使用
-            int currentExtra = PlayerPrefs.GetInt("ExtraRewardCoins", 0);
-            PlayerPrefs.SetInt("ExtraRewardCoins", currentExtra + extraCoins);
-            PlayerPrefs.Save();
+            PlayerDataManager.Instance.SetExtraRewardActive(true);
         }
     }
 

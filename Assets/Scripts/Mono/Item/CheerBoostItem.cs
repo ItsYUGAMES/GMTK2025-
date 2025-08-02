@@ -23,24 +23,21 @@ public class CheerBoostItem : ItemEffect
     {
         Debug.Log($"购买了 {itemName}，欢呼值填充速度增加");
 
-        // 查找进度条控制器
-        ProgressBarController progressBar = FindObjectOfType<ProgressBarController>();
+        // 通过PlayerDataManager设置效果状态
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.SetCheerBoostActive(true);
+        }
 
+        // 立即应用到当前进度条
+        ProgressBarController progressBar = FindObjectOfType<ProgressBarController>();
         if (progressBar != null)
         {
-            // 减少填充所需时间
-            progressBar.fillDuration *= progressMultiplier;
-            Debug.Log($"进度条填充时间调整为: {progressBar.fillDuration} 秒");
-
-            // 如果进度条正在填充，重新开始应用新速度
-            progressBar.StopFilling();
-            progressBar.StartFilling();
-        }
-        else
-        {
-            // 保存效果供后续使用
-            PlayerPrefs.SetFloat("CheerBoostMultiplier", progressMultiplier);
-            PlayerPrefs.Save();
+            if (progressBar.isFilling)
+            {
+                progressBar.StopFilling();
+                progressBar.StartFilling();
+            }
         }
     }
 
