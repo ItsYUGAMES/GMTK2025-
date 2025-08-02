@@ -26,6 +26,7 @@ public class ExtraRewardItem : ItemEffect
         {
             PlayerDataManager.Instance.SetExtraRewardActive(true);
         }
+        base.OnPurchase();
     }
 
     public override string GetDetailedDescription()

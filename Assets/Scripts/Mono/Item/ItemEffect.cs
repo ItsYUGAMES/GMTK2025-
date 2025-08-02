@@ -18,7 +18,19 @@ public abstract class ItemEffect : ScriptableObject
     /// <summary>
     /// 购买时会执行的效果
     /// </summary>
-    public abstract void OnPurchase();
+    public virtual void OnPurchase()
+    {
+        ShopManager shopManager = FindObjectOfType<ShopManager>();
+        if (shopManager != null)
+        {
+            shopManager.CloseShop();
+            Debug.Log("购买完成，商店已关闭");
+        }
+        else
+        {
+            Debug.LogWarning("未找到ShopManager，无法关闭商店");
+        }
+    }
 
     /// <summary>
     /// 游戏开始时执行的效果（可选）

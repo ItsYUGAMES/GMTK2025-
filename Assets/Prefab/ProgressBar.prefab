@@ -86,8 +86,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7879063321687195116}
   - component: {fileID: 5682315042003975655}
-  - component: {fileID: 73901343391647536}
   - component: {fileID: 5340019796867202391}
+  - component: {fileID: 73901343391647536}
   m_Layer: 5
   m_Name: ProgressBar
   m_TagString: Untagged
@@ -122,6 +122,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6296405893672179519}
   m_CullTransparentMesh: 1
+--- !u!114 &5340019796867202391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6296405893672179519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b85bcc349450a034f997d2e5fe4a3c30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  progressBarImage: {fileID: 73901343391647536}
+  fillDuration: 10
+  coinPrefab: {fileID: 8250640212558431838, guid: 5ebd21096471c4e40b04301835886dd8, type: 3}
+  numberOfCoins: 10
+  spawnRadius: 2
+  spawnForceMin: 3
+  spawnForceMax: 6
+  screenTopOffset: 1
+  shopManager: {fileID: 0}
+  upObject: {fileID: 0}
+  downObject: {fileID: 0}
+  targetY: 0
+  moveSpeed: 2
+  isFilling: 0
+  gameManager: {fileID: 0}
+  levelCompletedSFX: {fileID: 8300000, guid: 4605d315ebe6e2046beaa25710546d15, type: 3}
 --- !u!114 &73901343391647536
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,30 +180,3 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &5340019796867202391
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6296405893672179519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b85bcc349450a034f997d2e5fe4a3c30, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  progressBarImage: {fileID: 73901343391647536}
-  fillDuration: 10
-  coinPrefab: {fileID: 8250640212558431838, guid: 5ebd21096471c4e40b04301835886dd8, type: 3}
-  numberOfCoins: 10
-  spawnRadius: 2
-  spawnForceMin: 3
-  spawnForceMax: 6
-  screenTopOffset: 1
-  shopManager: {fileID: 0}
-  upObject: {fileID: 0}
-  downObject: {fileID: 0}
-  targetY: 0
-  moveSpeed: 2
-  gameManager: {fileID: 0}
-  levelCompletedSFX: {fileID: 8300000, guid: 4605d315ebe6e2046beaa25710546d15, type: 3}

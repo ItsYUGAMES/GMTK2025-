@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class ProgressBarController : MonoBehaviour
 {
@@ -23,11 +24,23 @@ public class ProgressBarController : MonoBehaviour
     [Header("Canvas移动设置")]
     public Transform upObject;
     public Transform downObject;
-    public float targetY = -490f;
+    public float targetY = 0f;
     public float moveSpeed = 2f;
+
+    [Header("脚本禁用设置")]
+    [SerializeField] private List<MonoBehaviour> scriptsToDisable = new List<MonoBehaviour>();
+    
+    public string[] scriptsToKeep = {
+        "GameManager",
+        "ShopManager",
+        "SFXManager",
+        "PlayerDataManager",
+        "ProgressBarController"
+    };
 
     private float timer = 0f;
     public bool isFilling = false;
+    private bool isPaused = false; // 暂停状态
     private Camera mainCamera;
     private int activeCoinsCount = 0;
     private bool isMoving = false;
@@ -39,10 +52,35 @@ public class ProgressBarController : MonoBehaviour
 
     void Awake()
     {
+        
         mainCamera = Camera.main;
         if (mainCamera == null)
         {
             Debug.LogError("场景中没有找到带有 'MainCamera' 标签的摄像机！", this);
+        }
+
+        // 自动获取 GameManager
+        if (gameManager == null)
+        {
+            gameManager = GameManager.Instance;
+            if (gameManager == null)
+            {
+                gameManager = FindObjectOfType<GameManager>();
+            }
+        }
+
+        // 自动获取 ShopManager
+        if (shopManager == null)
+        {
+            shopManager = FindObjectOfType<ShopManager>();
+            if (shopManager != null)
+            {
+                Debug.Log($"自动找到ShopManager: {shopManager.name}");
+            }
+            else
+            {
+                Debug.LogWarning("场景中没有找到ShopManager组件");
+            }
         }
 
         // 保存原始值
@@ -99,6 +137,43 @@ public class ProgressBarController : MonoBehaviour
         StartFilling();
     }
 
+    void OnEnable()
+    {
+        // 组件被启用时，如果之前被暂停，则恢复
+        if (isPaused)
+        {
+            SetPaused(false);
+            Debug.Log("ProgressBarController 已重新启用并恢复");
+        }
+    }
+
+    void OnDisable()
+    {
+        // 组件被禁用时，自动暂停
+        if (isFilling)
+        {
+            SetPaused(true);
+            Debug.Log("ProgressBarController 已被禁用并暂停");
+        }
+    }
+
+    // 暂停和恢复方法
+    public void SetPaused(bool paused)
+    {
+        if (isPaused == paused) return;
+
+        isPaused = paused;
+
+        if (isPaused)
+        {
+            Debug.Log("ProgressBarController 已暂停");
+        }
+        else
+        {
+            Debug.Log("ProgressBarController 已恢复");
+        }
+    }
+
     private void FindUpAndDownObjects()
     {
         if (upObject == null)
@@ -140,6 +215,7 @@ public class ProgressBarController : MonoBehaviour
         timer = 0f;
         progressBarImage.fillAmount = 0f;
         isFilling = true;
+        isPaused = false;
         StartCoroutine(FillProgressBarCoroutine());
     }
 
@@ -149,6 +225,7 @@ public class ProgressBarController : MonoBehaviour
         {
             StopAllCoroutines();
             isFilling = false;
+            isPaused = false;
             Debug.Log("进度条填充已停止。");
         }
     }
@@ -183,10 +260,20 @@ public class ProgressBarController : MonoBehaviour
     {
         float startTime = Time.time;
         float elapsedTime = 0f;
+        float pausedDuration = 0f;
 
         while (elapsedTime < fillDuration)
         {
-            elapsedTime = Time.time - startTime;
+            // 检查组件是否被禁用或暂停
+            if (!enabled || isPaused)
+            {
+                float pauseStartTime = Time.time;
+                // 等待组件重新启用且不暂停
+                yield return new WaitUntil(() => enabled && !isPaused);
+                pausedDuration += Time.time - pauseStartTime;
+            }
+
+            elapsedTime = Time.time - startTime - pausedDuration;
             progressBarImage.fillAmount = Mathf.Clamp01(elapsedTime / fillDuration);
             yield return null;
         }
@@ -201,9 +288,69 @@ public class ProgressBarController : MonoBehaviour
             SFXManager.Instance.PlaySFX(levelCompletedSFX);
         }
 
-        
+        // 进度条填满后禁用自定义脚本
+        DisableCustomScripts();
 
         StartCoroutine(SpawnCoinsRoutine());
+    }
+
+    // 禁用自定义脚本的方法
+    private void DisableCustomScripts()
+    {
+        // 禁用直接引用的脚本
+        foreach (MonoBehaviour script in scriptsToDisable)
+        {
+            if (script != null && script.enabled)
+            {
+                script.enabled = false;
+                Debug.Log($"已禁用指定脚本: {script.GetType().Name} (GameObject: {script.gameObject.name})");
+            }
+        }
+
+        // 如果没有指定脚本，则使用原来的通用方法
+        if (scriptsToDisable.Count == 0)
+        {
+            MonoBehaviour[] allScripts = FindObjectsOfType<MonoBehaviour>();
+
+            foreach (MonoBehaviour script in allScripts)
+            {
+                if (script == null || script == this) continue;
+
+                string scriptType = script.GetType().Name;
+
+                // 跳过Unity内置组件
+                if (IsUnityBuiltInComponent(scriptType))
+                    continue;
+
+                // 检查是否在保护列表中
+                if (System.Array.Exists(scriptsToKeep, keepScript => keepScript == scriptType))
+                {
+                    Debug.Log($"保护脚本: {scriptType} (GameObject: {script.gameObject.name})");
+                    continue;
+                }
+
+                script.enabled = false;
+                Debug.Log($"已禁用自定义脚本: {scriptType} (GameObject: {script.gameObject.name})");
+            }
+        }
+    }
+
+    // 检查是否是Unity内置组件
+    private bool IsUnityBuiltInComponent(string componentName)
+    {
+        string[] unityComponents = {
+            "Canvas", "CanvasScaler", "GraphicRaycaster", "CanvasRenderer",
+            "Image", "Text", "Button", "ScrollRect", "Slider", "Toggle",
+            "InputField", "Dropdown", "RawImage", "Mask", "RectMask2D",
+            "ContentSizeFitter", "LayoutElement", "HorizontalLayoutGroup",
+            "VerticalLayoutGroup", "GridLayoutGroup", "AspectRatioFitter",
+            "Camera", "Light", "MeshRenderer", "MeshFilter", "Collider",
+            "Collider2D", "Rigidbody", "Rigidbody2D", "Transform", "RectTransform",
+            "AudioSource", "AudioListener", "ParticleSystem", "Animation",
+            "Animator", "SpriteRenderer", "LineRenderer", "TrailRenderer"
+        };
+
+        return System.Array.Exists(unityComponents, component => component == componentName);
     }
 
     IEnumerator SpawnCoinsRoutine()
@@ -213,6 +360,9 @@ public class ProgressBarController : MonoBehaviour
 
         for (int i = 0; i < numberOfCoins; i++)
         {
+            // 检查组件是否被禁用或暂停
+            yield return new WaitUntil(() => enabled && !isPaused);
+
             SpawnSingleCoin();
             yield return new WaitForSeconds(0.05f);
         }
@@ -281,6 +431,12 @@ public class ProgressBarController : MonoBehaviour
 
             while (journey <= 1f)
             {
+                // 检查组件是否被禁用或暂停
+                if (!enabled || isPaused)
+                {
+                    yield return new WaitUntil(() => enabled && !isPaused);
+                }
+
                 journey += Time.deltaTime * moveSpeed;
 
                 upObject.position = Vector3.Lerp(upStartPos, targetPos, journey);
@@ -327,5 +483,6 @@ public class ProgressBarController : MonoBehaviour
         isFilling = false;
         activeCoinsCount = 0;
         isMoving = false;
+        isPaused = false;
     }
 }

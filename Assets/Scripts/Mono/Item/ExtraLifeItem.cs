@@ -28,6 +28,8 @@ public class ExtraLifeItem : ItemEffect
         {
             PlayerDataManager.Instance.SetExtraLifeActive(true);
         }
+        base.OnPurchase();
+
     }
 
     public override string GetDetailedDescription()

@@ -12,18 +12,15 @@ EditorBuildSettings:
     path: Assets/Scenes/Intro.unity
     guid: b4705e6627d430545a50e61686ca6143
   - enabled: 1
-    path: Assets/Scenes/GamePlay.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
-  - enabled: 1
-    path: Assets/Scenes/GameCG.unity
-    guid: 5903c444f3e104b4e8f1b4df0e16e7c3
-  - enabled: 1
-    path: Assets/Scenes/Template.unity
-    guid: 080cbd0afd2d3b44f92a127266d81d73
+    path: Assets/Scenes/Transition/Transition.unity
+    guid: fa80771fc3eca234cac139642e1bb6b1
   - enabled: 1
     path: Assets/Scenes/Fail.unity
     guid: ae165f2f62e5ccb4d9cd73555eba2d0d
   - enabled: 1
-    path: Assets/Scenes/Transition/Transition.unity
-    guid: fa80771fc3eca234cac139642e1bb6b1
+    path: Assets/Scenes/Level1.unity
+    guid: 5485c5958e4ed73459d5817b234d9c38
+  - enabled: 1
+    path: Assets/Scenes/Level2.unity
+    guid: 1f3569d1efcf5f04b91e847e11320bdc
   m_configObjects: {}

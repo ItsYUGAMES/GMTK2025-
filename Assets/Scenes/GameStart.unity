@@ -355,7 +355,6 @@ GameObject:
   - component: {fileID: 1192094725}
   - component: {fileID: 1192094726}
   - component: {fileID: 1192094727}
-  - component: {fileID: 1192094728}
   - component: {fileID: 1192094729}
   m_Layer: 0
   m_Name: GameManager
@@ -410,9 +409,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   musicAudioSource: {fileID: 0}
   sfxAudioSource: {fileID: 0}
+  musicAudioSources: []
   backgroundMusic:
   - {fileID: 8300000, guid: e809c778ed3f67c428187c15d3495ad1, type: 3}
   - {fileID: 8300000, guid: 5165aae682202e7478fce253163ace75, type: 3}
+  - {fileID: 8300000, guid: 6751350c7e2f45c458d485978a465bdc, type: 3}
+  - {fileID: 8300000, guid: e99f220f45eb25a49b241496f3a3443d, type: 3}
+  - {fileID: 8300000, guid: 53497b2e6c0808149a9367477a6f57a4, type: 3}
+  - {fileID: 8300000, guid: 1940848bf8fb3874e80c5167849c2e82, type: 3}
+  - {fileID: 8300000, guid: b76f17fc43bac9b488f72db50f26a6f0, type: 3}
   musicVolume: 0.5
   soundEffects: []
   sfxVolume: 1
@@ -471,33 +476,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerGold: 0
---- !u!114 &1192094728
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1192094721}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f314fde494aa1a418274d44dbd92ef8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  primaryKey: 97
-  secondaryKey: 100
-  requiredSuccessCount: 4
-  beatInterval: 1
-  successWindow: 0.4
-  isSingleKeyMode: 0
-  primaryKeyPrefab: {fileID: 0}
-  secondaryKeyPrefab: {fileID: 0}
-  primaryKeyPosition: {x: 0, y: 0, z: 0}
-  secondaryKeyPosition: {x: 0, y: 0, z: 0}
-  normalKeySprite: {fileID: 0}
-  highlightKeySprite: {fileID: 0}
-  successKeySprite: {fileID: 0}
-  missKeySprite: {fileID: 0}
-  feedbackDisplayDuration: 0.2
+  cheerBoostActive: 0
+  extraRewardActive: 0
+  extraLifeActive: 0
+  autoPlayActive: 0
 --- !u!114 &1192094729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -511,7 +493,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   goldText: {fileID: 0}
-  goldTextLegacy: {fileID: 0}
+  moneyTextName: MoneyText
+  autoFindMoneyText: 1
   goldPrefix: "\u91D1\u5E01: "
   goldSuffix: 
   enableCountAnimation: 1
@@ -534,7 +517,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1228511852
 MonoBehaviour:
   m_ObjectHideFlags: 0

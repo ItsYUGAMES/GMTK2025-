@@ -75,6 +75,31 @@ public class ShopManager : MonoBehaviour
             shopPanel.SetActive(false);
             Debug.Log("商店已关闭。");
         }
+        string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        switch (currentSceneName)
+        {
+            case "Level1":
+                SFXManager.Instance.PlayBackgroundMusic(2);
+                Debug.Log("商店关闭：准备播放Level2音乐");
+                break;
+            case "Level2":
+                SFXManager.Instance.PlayBackgroundMusic(3);
+                Debug.Log("商店关闭：准备播放Level3音乐");
+                break;
+            case "Level3":
+                SFXManager.Instance.PlayBackgroundMusic(4);
+                Debug.Log("商店关闭：准备播放Level4音乐");
+                break;
+            case "Level4":
+                SFXManager.Instance.PlayBackgroundMusic(5);
+                Debug.Log("商店关闭：准备播放Level5音乐");
+                break;
+            case "Level5":
+                SFXManager.Instance.PlayBackgroundMusic(6);
+                Debug.Log("商店关闭：准备播放Level6音乐");
+                break;
+        }
+        GameManager.Instance.LoadNextLevel();
     }
 
     void BindBuyButtonEvents()

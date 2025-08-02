@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 public class FailManager : MonoBehaviour
 {
     [Header("移动设置")]
@@ -12,13 +13,26 @@ public class FailManager : MonoBehaviour
     public AudioClip failSFX;
     public AudioClip doorCloseSFX;
     public float audioDelay = 1f;
+    
     private bool isMoving = false;
+    private bool hasExecuted = false; // 防止重复执行
 
     void Start()
     {
+        // 只在Fail场景中执行
+        if (SceneManager.GetActiveScene().name != "Fail")
+        {
+            Debug.Log("当前不是Fail场景，FailManager不执行移动逻辑");
+            return;
+        }
+
+        // 防止重复执行
+        if (hasExecuted) return;
+        hasExecuted = true;
+
         // 自动查找Up和Down对象
         FindUpAndDownObjects();
-        
+
         // 开始移动到(0,0,0)
         if (upObject != null && downObject != null)
         {
@@ -26,13 +40,23 @@ public class FailManager : MonoBehaviour
         }
     }
 
-    
+    void OnEnable()
+    {
+        // 当脚本被重新启用时，检查场景
+        if (hasExecuted && SceneManager.GetActiveScene().name != "Fail")
+        {
+            Debug.Log("FailManager在非Fail场景被启用，不执行移动逻辑");
+        }
+    }
+
+    // 其余代码保持不变...
     public void RestartGame()
     {
         Debug.Log("按钮被点击了！");
         Debug.Log("重启游戏，返回GameStart场景");
         SceneManager.LoadScene("GameStart");
     }
+
     private void FindUpAndDownObjects()
     {
         if (upObject == null)

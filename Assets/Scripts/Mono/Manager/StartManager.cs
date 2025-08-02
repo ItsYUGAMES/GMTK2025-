@@ -28,7 +28,10 @@ public class StartManager : MonoBehaviour
     public Sprite successKeySprite;
     public Sprite missKeySprite;  // 添加失败sprite
     public float feedbackDisplayDuration = 0.2f;
-
+    
+    [Header("音效设置")]
+    public AudioClip moveUpDownSFX; // Up和Down移动音效
+    
     private SpriteRenderer primaryKeyRenderer;
     private SpriteRenderer secondaryKeyRenderer;
     private int currentSuccessCount = 0;
@@ -38,7 +41,8 @@ public class StartManager : MonoBehaviour
     private List<MonoBehaviour> pausedBehaviors = new List<MonoBehaviour>();
     private GameObject instantiatedPrimaryKey;
     private GameObject instantiatedSecondaryKey;
-    
+    private bool isMoving = false; // 添加移动状态跟踪
+    private LongPressController longPressController;
     void Start()
     {
         // 根据GameManager获取游戏模式
@@ -47,9 +51,104 @@ public class StartManager : MonoBehaviour
             isSingleKeyMode = GameManager.Instance.IsSingleMode();
         }
 
+        // 先移动Up和Down对象
+        StartCoroutine(MoveUpDownObjects());
+
         InstantiateKeyPrefabs();
         PauseAllOtherScripts();
-        StartCoroutine(StartSequence());
+
+        // 检查是否有LongPressController，如果有则等待其完成
+        longPressController = FindObjectOfType<LongPressController>();
+        if (longPressController != null)
+        {
+            Debug.Log("检测到LongPressController，等待第一次长按成功");
+            StartCoroutine(WaitForLongPressAndStart(longPressController));
+        }
+        
+        // 如果没有LongPressController，StartSequence将在MoveUpDownObjects完成后启动
+    }
+
+    private IEnumerator MoveUpDownObjects()
+    {
+        isMoving = true; // 开始移动
+        
+        // 查找Up和Down对象
+        GameObject upObject = GameObject.Find("Up");
+        GameObject downObject = GameObject.Find("Down");
+    
+        if (upObject == null || downObject == null)
+        {
+            Debug.LogWarning("未找到Up或Down对象");
+            isMoving = false;
+            
+            // 如果没有LongPressController，直接开始序列
+           
+            if (this.longPressController == null)
+            {
+                StartCoroutine(StartSequence());
+            }
+            yield break;
+        }
+
+        Vector3 upStartPos = upObject.transform.position;
+        Vector3 downStartPos = downObject.transform.position;
+        Vector3 upTargetPos = upStartPos + Vector3.up * 9f;
+        Vector3 downTargetPos = downStartPos + Vector3.down * 9f;
+
+        float moveDuration = 1.0f; // 移动持续时间
+        float elapsedTime = 0f;
+
+        Debug.Log("开始移动Up和Down对象");
+        // 播放移动音效
+        if (SFXManager.Instance != null && moveUpDownSFX != null)
+        {
+            AudioSource AudioSource = SFXManager.Instance.GetAudioSource();
+            AudioSource.clip = moveUpDownSFX;
+            AudioSource.time = 0.3f; // 从0.3秒开始播放
+            SFXManager.Instance.PlaySFX(moveUpDownSFX);
+            Debug.Log("播放Up和Down移动音效");
+        }
+        
+        while (elapsedTime < moveDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float journey = elapsedTime / moveDuration;
+
+            upObject.transform.position = Vector3.Lerp(upStartPos, upTargetPos, journey);
+            downObject.transform.position = Vector3.Lerp(downStartPos, downTargetPos, journey);
+
+            yield return null;
+        }
+
+        // 确保最终位置精确
+        upObject.transform.position = upTargetPos;
+        downObject.transform.position = downTargetPos;
+
+        Debug.Log("Up和Down对象移动完成");
+        isMoving = false; // 移动完成
+
+        // 如果没有LongPressController，直接开始序列
+        LongPressController longPressController = FindObjectOfType<LongPressController>();
+        if (longPressController == null)
+        {
+            StartCoroutine(StartSequence());
+        }
+    }
+
+    private IEnumerator WaitForLongPressAndStart(LongPressController longPressController)
+    {
+        // 等待移动完成
+        yield return new WaitUntil(() => !isMoving);
+
+        Debug.Log("请进行第一次长按以开始节奏序列");
+
+        // 等待长按成功
+        yield return new WaitUntil(() => longPressController.successCount >= 1);
+
+        Debug.Log("第一次长按成功，开始序列");
+
+        // 直接完成序列，恢复脚本并禁用StartManager
+        OnSequenceCompleted();
     }
 
     void Update()
@@ -111,19 +210,26 @@ public class StartManager : MonoBehaviour
         {
             if (mb == this || mb is PauseManager)
                 continue;
+            if (mb == this || mb is SFXManager)
+                continue;
+            if (mb == this || mb is LongPressController)
+                continue;
             // 检查是否挂载在 Canvas 对象上
             if (mb.GetComponentInParent<Canvas>() != null)
             {
-                // 如果是 ProgressBarController，不跳过，需要暂停
+                // 如果是 ProgressBarController，需要暂停
                 if (mb.GetType().Name == "ProgressBarController")
                 {
-                    // 继续执行暂停逻辑
+                    pausedBehaviors.Add(mb);
+                    mb.enabled = false;
+                    continue;
                 }
                 else
                 {
                     continue; // 其他 Canvas 组件跳过
                 }
             }
+        
             pausedBehaviors.Add(mb);
             mb.enabled = false;
         }
@@ -182,7 +288,6 @@ public class StartManager : MonoBehaviour
             yield return null;
         }
 
-        // 如果超时未按键，重置计数
         // 如果超时未按键，重置计数
         if (isWaitingForInput)
         {
@@ -245,6 +350,7 @@ public class StartManager : MonoBehaviour
             SetKeySprite(currentExpectedKey, missKeySprite);
         }
     }
+    
     private void SetKeySprite(KeyCode key, Sprite sprite)
     {
         if (key == primaryKey && primaryKeyRenderer != null)
@@ -287,5 +393,9 @@ public class StartManager : MonoBehaviour
         {
             controller.StartRhythm();
         }
+        
+        // 禁用此脚本，防止它在完成任务后继续运行
+        this.enabled = false;
+        Debug.Log("StartManager 脚本已禁用。");
     }
 }

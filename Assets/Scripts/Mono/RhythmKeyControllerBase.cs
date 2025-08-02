@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 /// <summary>
@@ -363,7 +364,11 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         isPaused = false;
         consecutiveSuccessOnFailedKey = 0;
         SetAllKeysSprite(normalKeySprite);
-
+        PauseManager pauseManager = FindObjectOfType<PauseManager>();
+        if (pauseManager != null)
+        {
+            pauseManager.ResumeGame();
+        }
         if (beatCoroutine != null) StopCoroutine(beatCoroutine);
         beatCoroutine = StartCoroutine(WaitForNextBeat());
     }
@@ -379,6 +384,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     protected virtual void OnGameFail()
     {
         Debug.Log($"[{keyConfigPrefix}] 游戏失败！");
+        SceneManager.LoadScene("Fail");
     }
 
     // ========== 道具系统公共方法 ==========

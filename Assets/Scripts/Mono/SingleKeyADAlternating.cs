@@ -86,11 +86,7 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
         Debug.Log($"[{keyConfigPrefix}] 失败次数增加: {failCount}");
         onADKeyFailed?.Invoke();
     }
-
-    protected override void OnGameFail()
-    {
-        SceneManager.LoadScene("Fail");
-    }
+    
 
     // 重写SetKeySprite：只处理主键
     protected override void SetKeySprite(KeyCode key, Sprite sprite)

@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -16,17 +17,20 @@ public class GameManager : MonoBehaviour
     public FailManager failManager;
     public static GameManager Instance { get; private set; }
     private int currentLevel = 1; // 当前关卡，基于场景位置
+    
     [Header("游戏模式")]
     public bool isSingleMode = false; // 是否为Single模式
+    
     [Header("音效设置")]
     public AudioClip transitionCompleteSFX; // Transition场景移动完成音效
-// 设置Single模式
+
+    // 设置Single模式
     public void SetSingleMode(bool enabled)
     {
         isSingleMode = enabled;
         Debug.Log($"游戏模式设置为: {(enabled ? "Single" : "HotSeat")}");
     }
-    
+
     [ContextMenu("切换到Intro场景")]
     public void LoadIntroScene()
     {
@@ -34,11 +38,12 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("Intro"); // 直接调用SceneManager，避免递归
     }
 
-// 获取当前游戏模式
+    // 获取当前游戏模式
     public bool IsSingleMode()
     {
         return isSingleMode;
     }
+
     void Awake()
     {
         // 单例模式 - 确保只有一个GameManager实例
@@ -56,7 +61,6 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         CheckGameplayScene();
-       
     }
 
     void OnEnable()
@@ -72,7 +76,10 @@ public class GameManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         CheckGameplayScene();
-    
+
+        // 延迟播放背景音乐，确保SFXManager已初始化
+       
+
         // 控制IntroManager的启用状态
         IntroManager introManager = GetComponent<IntroManager>();
         failManager = GetComponent<FailManager>();
@@ -90,9 +97,9 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (failManager!=null)
+        if (failManager != null)
         {
-            if (scene.name=="Fail")
+            if (scene.name == "Fail")
             {
                 failManager.enabled = true;
             }
@@ -103,12 +110,48 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // 延迟播放关卡音乐的协程
+    
+
+    /// <summary>
+    /// 切换到下一关卡
+    /// </summary>
+    public void LoadNextLevel()
+    {
+        string currentSceneName = SceneManager.GetActiveScene().name;
+
+        switch (currentSceneName)
+        {
+            case "Level1":
+                LoadScene("Level2");
+                break;
+            case "Level2":
+                LoadScene("Level3");
+                break;
+            case "Level3":
+                LoadScene("Level4");
+                break;
+            case "Level4":
+                LoadScene("Level5");
+                break;
+            case "Level5":
+                LoadScene("Level6");
+                break;
+            case "Level6":
+                LoadScene("End");
+                break;
+            default:
+                Debug.LogWarning($"未知场景: {currentSceneName}");
+                break;
+        }
+    }
+
     // 根据当前场景名更新关卡
     private void UpdateLevelFromCurrentScene()
     {
         string currentSceneName = SceneManager.GetActiveScene().name;
         int sceneIndex = levelScenes.IndexOf(currentSceneName);
-    
+
         if (sceneIndex >= 0)
         {
             currentLevel = sceneIndex + 1; // 直接设置内存中的关卡号
@@ -119,12 +162,12 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning($"场景 {currentSceneName} 不在关卡列表中");
         }
     }
+
     public void LoadScene(string sceneName)
     {
         SceneManager.LoadScene(sceneName);
     }
 
-  
     public bool CheckGameplayScene()
     {
         string currentSceneName = SceneManager.GetActiveScene().name.ToLower();
@@ -132,11 +175,11 @@ public class GameManager : MonoBehaviour
         // 更新关卡信息
         UpdateLevelFromCurrentScene();
 
-        if (currentSceneName == "gameplay")
+        if (currentSceneName != "Level2")
         {
             return true;
         }
-    
+
         // 在 transition 场景中重置对象位置
         if (currentSceneName == "transition")
         {
@@ -147,7 +190,7 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
-// 等待一帧后再移动对象
+    // 等待一帧后再移动对象
     private System.Collections.IEnumerator WaitAndMoveObjects()
     {
         // 等待更长时间，确保所有对象都完全初始化
@@ -163,7 +206,7 @@ public class GameManager : MonoBehaviour
         }
 
         // 检查对象是否已经在原点
-        if (Vector3.Distance(upObj.transform.position, Vector3.zero) < 0.1f && 
+        if (Vector3.Distance(upObj.transform.position, Vector3.zero) < 0.1f &&
             Vector3.Distance(downObj.transform.position, Vector3.zero) < 0.1f)
         {
             Debug.Log("Up和Down对象已经在原点附近，跳过移动动画");
@@ -180,8 +223,7 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(MoveObjectsToOrigin(upObj, downObj));
     }
-    
-    // 重置 Up 和 Down 对象到原点
+
     // 重置 Up 和 Down 对象到原点
     private void ResetUpDownObjectsToOrigin()
     {
@@ -193,6 +235,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(MoveObjectsToOrigin(upObj, downObj));
         }
     }
+
     private System.Collections.IEnumerator MoveObjectsToOrigin(GameObject upObj, GameObject downObj)
     {
         float moveSpeed = 3f; // 降低移动速度，让动画更明显
@@ -240,11 +283,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
-// 获取移动完成音效的方法，你需要在GameManager中添加相应的AudioClip字段
+    // 获取移动完成音效的方法，你需要在GameManager中添加相应的AudioClip字段
     private AudioClip GetMoveCompleteAudioClip()
     {
         return transitionCompleteSFX;
     }
+
     // 更新游戏开始方法
     public void GameStart_Single()
     {
@@ -257,6 +301,4 @@ public class GameManager : MonoBehaviour
         SetSingleMode(false);
         LoadScene("Intro");
     }
-
-    
 }

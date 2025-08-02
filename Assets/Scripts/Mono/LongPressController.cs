@@ -16,7 +16,6 @@ public class LongPressController : MonoBehaviour
     public float resetDuration = 2f;     // 回退动画时间
     public float windowDuration = 0.3f;  // 窗口期时间
     public float failDisplayDuration = 0.3f; // 失败图片显示时间
-
     [Header("判定统计/流程")]
     public int failToLose = 2;    // 多少次失败GameOver
 
@@ -32,7 +31,7 @@ public class LongPressController : MonoBehaviour
     private bool isResetting = false;
     private bool isInWindow = false;
     private bool isInFailState = false;  // 新增：是否处于失败状态（图3）
-    private int successCount = 0;
+    public int successCount = 0;
     private int failCount = 0;
     private bool isGameEnded = false;
     private bool isAutoPlaying = false;
@@ -93,11 +92,11 @@ public class LongPressController : MonoBehaviour
 
     void ResumeScripts()
     {
-        for (int i = 0; i < scriptsToSuspend.Count && i < originalEnabledStates.Count; i++)
+        foreach (var script in scriptsToSuspend)
         {
-            if (scriptsToSuspend[i] != null)
+            if (script != null)
             {
-                scriptsToSuspend[i].enabled = originalEnabledStates[i];
+                script.enabled = true;
             }
         }
         Debug.Log("脚本已恢复");

@@ -39,6 +39,8 @@ public class CheerBoostItem : ItemEffect
                 progressBar.StartFilling();
             }
         }
+        base.OnPurchase();
+
     }
 
     public override string GetDetailedDescription()

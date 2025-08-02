@@ -9,7 +9,11 @@ public class SFXManager : MonoBehaviour
     [Header("音频源")]
     public AudioSource musicAudioSource;
     public AudioSource sfxAudioSource;
-
+    
+    [Header("多音乐播放支持")]
+    public List<AudioSource> musicAudioSources = new List<AudioSource>();
+    private Dictionary<int, AudioSource> activeMusicSources = new Dictionary<int, AudioSource>();
+    
     [Header("背景音乐")]
     public AudioClip[] backgroundMusic;
     public float musicVolume = 0.5f;
@@ -20,16 +24,18 @@ public class SFXManager : MonoBehaviour
 
     private int currentMusicIndex = 0;
     private bool isMusicPlaying = false;
+    
     [Header("UI音效")]
     public AudioClip buttonClickSFX;
     public AudioClip buttonHoverSFX;
+
     void Awake()
     {
         // 单例模式
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // 已经设置了
+            DontDestroyOnLoad(gameObject);
             InitializeAudioSources();
         }
         else
@@ -49,14 +55,20 @@ public class SFXManager : MonoBehaviour
 
     private void InitializeAudioSources()
     {
-        // 如果没有指定音频源，自动创建
+        // 初始化第一个音乐AudioSource
         if (musicAudioSource == null)
         {
-            GameObject musicObj = new GameObject("MusicAudioSource");
+            GameObject musicObj = new GameObject("MusicAudioSource_0");
             musicObj.transform.SetParent(transform);
             musicAudioSource = musicObj.AddComponent<AudioSource>();
             musicAudioSource.loop = true;
             musicAudioSource.playOnAwake = false;
+        }
+
+        // 将主音乐源添加到列表中
+        if (!musicAudioSources.Contains(musicAudioSource))
+        {
+            musicAudioSources.Add(musicAudioSource);
         }
 
         if (sfxAudioSource == null)
@@ -73,19 +85,65 @@ public class SFXManager : MonoBehaviour
         sfxAudioSource.volume = sfxVolume;
     }
 
-    // 播放背景音乐
+    // 播放背景音乐（支持多音乐共存）
+    // 播放背景音乐（支持多音乐共存）
     public void PlayBackgroundMusic(int musicIndex)
     {
         if (backgroundMusic.Length == 0 || musicIndex < 0 || musicIndex >= backgroundMusic.Length)
+        {
+            Debug.LogError($"音乐索引{musicIndex}无效，backgroundMusic数组长度: {backgroundMusic.Length}");
             return;
+        }
 
-        currentMusicIndex = musicIndex;
-        musicAudioSource.clip = backgroundMusic[musicIndex];
-        musicAudioSource.Play();
+        if (backgroundMusic[musicIndex] == null)
+        {
+            Debug.LogError($"backgroundMusic[{musicIndex}]为空");
+            return;
+        }
+
+        // 移除重复播放检查，允许多音乐共存
+        // 如果需要停止相同音乐，可以手动调用StopSpecificBackgroundMusic
+    
+        // 获取或创建新的AudioSource
+        AudioSource musicSource = GetAvailableMusicSource();
+
+        musicSource.clip = backgroundMusic[musicIndex];
+        musicSource.volume = musicVolume;
+        musicSource.loop = true;
+        musicSource.Play();
+
+        // 记录这个音乐索引对应的AudioSource
+        activeMusicSources[musicIndex] = musicSource;
         isMusicPlaying = true;
 
-        Debug.Log($"开始播放背景音乐: {backgroundMusic[musicIndex].name}");
+        Debug.Log($"开始播放背景音乐[{musicIndex}]: {backgroundMusic[musicIndex].name}，使用AudioSource: {musicSource.name}");
+        Debug.Log($"当前活跃音乐数量: {activeMusicSources.Count}");
     }
+
+    // 获取可用的AudioSource
+    private AudioSource GetAvailableMusicSource()
+    {
+        // 查找未使用的AudioSource
+        foreach (var source in musicAudioSources)
+        {
+            if (!source.isPlaying)
+            {
+                return source;
+            }
+        }
+
+        // 如果没有可用的，创建新的
+        GameObject musicObj = new GameObject($"MusicAudioSource_{musicAudioSources.Count}");
+        musicObj.transform.SetParent(transform);
+        AudioSource newSource = musicObj.AddComponent<AudioSource>();
+        newSource.loop = true;
+        newSource.playOnAwake = false;
+        newSource.volume = musicVolume;
+
+        musicAudioSources.Add(newSource);
+        return newSource;
+    }
+    
 
     // 停止背景音乐
     public void StopBackgroundMusic()
@@ -94,20 +152,48 @@ public class SFXManager : MonoBehaviour
         isMusicPlaying = false;
         Debug.Log("背景音乐已停止");
     }
+
     // 停止指定索引的背景音乐
     public void StopSpecificBackgroundMusic(int musicIndex)
     {
-        if (isMusicPlaying && currentMusicIndex == musicIndex)
+        if (activeMusicSources.ContainsKey(musicIndex))
         {
-            musicAudioSource.Stop();
-            isMusicPlaying = false;
-            Debug.Log($"已停止播放背景音乐[{musicIndex}]: {backgroundMusic[musicIndex].name}");
+            AudioSource source = activeMusicSources[musicIndex];
+            if (source.isPlaying)
+            {
+                source.Stop();
+                Debug.Log($"已停止播放背景音乐[{musicIndex}]: {backgroundMusic[musicIndex].name}");
+            }
+            activeMusicSources.Remove(musicIndex);
         }
-        else if (currentMusicIndex != musicIndex)
+        else
         {
-            Debug.Log($"当前播放的不是音乐[{musicIndex}]，无需停止");
+            Debug.Log($"音乐[{musicIndex}]当前没有在播放");
         }
     }
+
+    // 停止所有背景音乐
+    public void StopAllBackgroundMusic()
+    {
+        foreach (var kvp in activeMusicSources)
+        {
+            if (kvp.Value.isPlaying)
+            {
+                kvp.Value.Stop();
+            }
+        }
+        activeMusicSources.Clear();
+        isMusicPlaying = false;
+        Debug.Log("所有背景音乐已停止");
+    }
+
+    // 检查特定音乐是否正在播放
+    public bool IsMusicPlaying(int musicIndex)
+    {
+        return activeMusicSources.ContainsKey(musicIndex) &&
+               activeMusicSources[musicIndex].isPlaying;
+    }
+
     // 暂停/恢复背景音乐
     public void PauseBackgroundMusic()
     {
@@ -117,7 +203,7 @@ public class SFXManager : MonoBehaviour
             Debug.Log("背景音乐已暂停");
         }
     }
-    
+
     public void ResumeBackgroundMusic()
     {
         if (isMusicPlaying)
@@ -169,6 +255,12 @@ public class SFXManager : MonoBehaviour
     {
         musicVolume = Mathf.Clamp01(volume);
         musicAudioSource.volume = musicVolume;
+        
+        // 同时更新所有音乐AudioSource的音量
+        foreach (var source in musicAudioSources)
+        {
+            source.volume = musicVolume;
+        }
     }
 
     public void SetSFXVolume(float volume)
@@ -181,36 +273,47 @@ public class SFXManager : MonoBehaviour
     public void MuteMusicToggle()
     {
         musicAudioSource.mute = !musicAudioSource.mute;
+        
+        // 同时控制所有音乐AudioSource的静音状态
+        foreach (var source in musicAudioSources)
+        {
+            source.mute = musicAudioSource.mute;
+        }
     }
 
     public void MuteSFXToggle()
     {
         sfxAudioSource.mute = !sfxAudioSource.mute;
     }
-// 获取音效AudioSource
+
+    // 获取音效AudioSource
     public AudioSource GetAudioSource()
     {
         return sfxAudioSource;
     }
 
     // 获取当前状态
-    // 获取当前状态
     public bool IsMusicPlaying() => isMusicPlaying && musicAudioSource.isPlaying;
     public float GetMusicVolume() => musicVolume;
     public float GetSFXVolume() => sfxVolume;
-    public string GetCurrentMusicName() => 
-        backgroundMusic.Length > 0 && currentMusicIndex < backgroundMusic.Length ? 
+    public string GetCurrentMusicName() =>
+        backgroundMusic.Length > 0 && currentMusicIndex < backgroundMusic.Length ?
         backgroundMusic[currentMusicIndex].name : "无";
 
     void Update()
     {
-        // 检查音乐是否播放完毕，自动播放下一首
-        if (isMusicPlaying && !musicAudioSource.isPlaying && backgroundMusic.Length > 1)
+        bool anyMusicPlaying = false;
+        foreach (var kvp in activeMusicSources)
         {
-            PlayNextMusic();
+            if (kvp.Value.isPlaying)
+            {
+                anyMusicPlaying = true;
+                break;
+            }
         }
+        isMusicPlaying = anyMusicPlaying;
     }
-    
+
     // 播放按钮点击音效
     public void PlayButtonClickSFX()
     {
@@ -220,12 +323,12 @@ public class SFXManager : MonoBehaviour
             sfxAudioSource.PlayOneShot(buttonClickSFX);
         }
     }
-    
+
     public void OnButtonClick()
     {
         Debug.Log($"按钮被点击，backgroundMusic数组长度: {backgroundMusic.Length}");
         Debug.Log($"当前音乐播放状态: {isMusicPlaying}");
-    
+
         // 播放点击音效
         SFXManager.Instance.PlayButtonClickSFX();
 
@@ -241,7 +344,7 @@ public class SFXManager : MonoBehaviour
         }
     }
 
-// 播放按钮悬停音效
+    // 播放按钮悬停音效
     public void PlayButtonHoverSFX()
     {
         if (buttonHoverSFX != null)
@@ -250,7 +353,7 @@ public class SFXManager : MonoBehaviour
         }
     }
 
-// 通用的播放指定音效的方法（通过名称）
+    // 通用的播放指定音效的方法（通过名称）
     public void PlaySFXByName(string clipName)
     {
         for (int i = 0; i < soundEffects.Length; i++)

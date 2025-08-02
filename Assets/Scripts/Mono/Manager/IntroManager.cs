@@ -119,7 +119,7 @@ public class IntroManager : MonoBehaviour
 
         yield return new WaitForSeconds(1.0f);
         Debug.Log("剧情播放完成");
-        SceneManager.LoadScene("Template");
+        SceneManager.LoadScene("Level1");
     }
 
     IEnumerator MoveBothDragonsWithApplause()

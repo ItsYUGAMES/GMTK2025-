@@ -29,6 +29,8 @@
             {
                 PlayerDataManager.Instance.SetAutoPlayActive(true);
             }
+            base.OnPurchase();
+
         }
 
         public override string GetDetailedDescription()
