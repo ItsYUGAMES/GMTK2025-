@@ -376,7 +376,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelScenes: []
-  progressBar: {fileID: 0}
   failManager: {fileID: 1192094726}
   isSingleMode: 0
   transitionCompleteSFX: {fileID: 8300000, guid: 532df27fa88619e47bfefd946a5a116b, type: 3}
@@ -414,10 +413,10 @@ MonoBehaviour:
   - {fileID: 8300000, guid: e809c778ed3f67c428187c15d3495ad1, type: 3}
   - {fileID: 8300000, guid: 5165aae682202e7478fce253163ace75, type: 3}
   - {fileID: 8300000, guid: 6751350c7e2f45c458d485978a465bdc, type: 3}
-  - {fileID: 8300000, guid: 1940848bf8fb3874e80c5167849c2e82, type: 3}
+  - {fileID: 8300000, guid: dfc910f01992a9846b236bed22ab8f3c, type: 3}
   - {fileID: 8300000, guid: 53497b2e6c0808149a9367477a6f57a4, type: 3}
   - {fileID: 8300000, guid: e99f220f45eb25a49b241496f3a3443d, type: 3}
-  - {fileID: 8300000, guid: b76f17fc43bac9b488f72db50f26a6f0, type: 3}
+  - {fileID: 8300000, guid: 51a7b46ef5683d84cb92f821b879a5c2, type: 3}
   musicVolume: 0.5
   soundEffects: []
   sfxVolume: 1
@@ -480,6 +479,7 @@ MonoBehaviour:
   extraRewardActive: 0
   extraLifeActive: 0
   autoPlayActive: 0
+  holdModeActive: 0
 --- !u!114 &1192094729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -517,7 +517,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1228511852
 MonoBehaviour:
   m_ObjectHideFlags: 0

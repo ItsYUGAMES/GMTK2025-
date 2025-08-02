@@ -162,6 +162,11 @@ public class PlayerDataManager : MonoBehaviour
         extraLifeActive = false;
         Debug.Log("所有道具效果已重置");
     }
+    private ProgressBarController[] GetAllProgressBarControllers()
+    {
+        // FindObjectsOfType 会返回场景中所有挂载了 ProgressBarController 脚本的对象
+        return FindObjectsOfType<ProgressBarController>();
+    }
     public void ReapplyAllActiveItems()
     {
         // 重新应用额外生命效果
@@ -184,24 +189,32 @@ public class PlayerDataManager : MonoBehaviour
         // 重新应用欢呼加速效果
         if (cheerBoostActive)
         {
-            var progressBar = FindObjectOfType<ProgressBarController>();
-            if (progressBar != null && progressBar.isFilling)
+            var progressBar = GetAllProgressBarControllers();
+            foreach (ProgressBarController progressBarController in progressBar)
             {
-                progressBar.StopFilling();
-                progressBar.StartFilling();
-                Debug.Log("重新应用欢呼加速效果");
+                if (progressBarController != null && progressBarController.isFilling)
+                {
+                    progressBarController.StopFilling();
+                    progressBarController.StartFilling();
+                    Debug.Log("重新应用欢呼加速效果");
+                }
             }
+            
         }
 
         // 重新应用额外奖励效果
         if (extraRewardActive)
         {
-            var progressBar = FindObjectOfType<ProgressBarController>();
-            if (progressBar != null)
+            var progressBar = GetAllProgressBarControllers();
+            foreach (ProgressBarController progressBarController in progressBar)
             {
-                progressBar.numberOfCoins += 5;
-                Debug.Log($"重新应用额外奖励效果：完成后可获得金币数增加到 {progressBar.numberOfCoins}");
+                if (progressBarController != null)
+                {
+                    progressBarController.numberOfCoins += 3;
+                    Debug.Log($"重新应用额外奖励效果：完成后可获得金币数增加到 {progressBarController.numberOfCoins}");
+                }
             }
+            
         }
         if (holdModeActive)
         {

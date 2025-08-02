@@ -203,7 +203,7 @@ public class StartManager : MonoBehaviour
         else
         {
             // 双键模式：检测期望的键
-            if (Input.GetKeyDown(currentExpectedKey))
+            if (Input.GetKeyDown(primaryKey))
             {
                 OnKeyPressed();
             }

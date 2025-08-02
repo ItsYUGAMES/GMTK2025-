@@ -115,7 +115,7 @@ public class PlayerGoldUI : MonoBehaviour
 
     private void ForceUpdateDisplay(int gold)
     {
-        string displayText = goldPrefix + gold.ToString() + goldSuffix;
+        string displayText = gold.ToString();
 
         if (goldText != null)
         {

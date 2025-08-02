@@ -343,6 +343,8 @@ public class SFXManager : MonoBehaviour
             Debug.LogError("backgroundMusic数组中没有索引为1的音乐！");
         }
     }
+    
+    
 
     // 播放按钮悬停音效
     public void PlayButtonHoverSFX()

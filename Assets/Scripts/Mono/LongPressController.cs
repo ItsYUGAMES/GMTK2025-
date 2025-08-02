@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class LongPressController : MonoBehaviour
 {
@@ -520,14 +521,14 @@ IEnumerator ShowFailImageAndEnterFailState()
         isGameEnded = true;
         StopAutoPlay();
         ResumeScripts();
-        Debug.Log("游戏失败！");
-    }
-
+        SceneManager.LoadScene("Fail");             
+    }                                               
+                                                                                
     public bool IsInProgress() => isFilling || isResetting || isInWindow || isInFailState;
     public float GetFillProgress() => fillAmount;
     public bool IsInWindowPeriod() => isInWindow;
     public bool IsResetting() => isResetting;
-    public bool IsInFailState() => isInFailState;
+    public bool IsInFailState() => isInFailState;                                                                                                                                                                       
 
     public void ResetAll()
     {

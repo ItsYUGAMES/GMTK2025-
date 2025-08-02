@@ -283,6 +283,7 @@ MonoBehaviour:
   scriptsToPause:
   - {fileID: 2043806614}
   - {fileID: 486041705}
+  - {fileID: 0}
 --- !u!114 &72078777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1125,7 +1126,7 @@ MonoBehaviour:
   successWindow: 0.2
   infiniteLoop: 1
   successToPass: 10
-  failToLose: 10
+  failToLose: 5
   needConsecutiveSuccessToResume: 4
   isHoldMode: 0
   successCount: 0
@@ -1759,7 +1760,7 @@ MonoBehaviour:
   successWindow: 0.2
   infiniteLoop: 1
   successToPass: 10
-  failToLose: 10
+  failToLose: 5
   needConsecutiveSuccessToResume: 4
   isHoldMode: 0
   successCount: 0

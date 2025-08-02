@@ -260,7 +260,7 @@ MonoBehaviour:
   isSingleKeyMode: 1
   primaryKeyPrefab: {fileID: 5861302162887998563, guid: cbaff493b628b4c4b9ae25905b2cc3af, type: 3}
   secondaryKeyPrefab: {fileID: 0}
-  primaryKeyPosition: {x: 3.5, y: 0, z: 0}
+  primaryKeyPosition: {x: 6, y: 0.25, z: 0}
   secondaryKeyPosition: {x: 0, y: 0, z: 0}
   normalKeySprite: {fileID: 21300000, guid: 654c66ed2551b4e4a91de9a71d62070d, type: 3}
   highlightKeySprite: {fileID: 21300000, guid: ee6867011e2ee464293e953bf96f7e99, type: 3}
@@ -283,6 +283,7 @@ MonoBehaviour:
   scriptsToPause:
   - {fileID: 2043806614}
   - {fileID: 486041705}
+  - {fileID: 0}
 --- !u!114 &72078777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -389,7 +390,7 @@ Transform:
   m_GameObject: {fileID: 293155372}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5, y: 0, z: 0}
+  m_LocalPosition: {x: -5.2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1282,7 +1283,7 @@ MonoBehaviour:
   keyConfigPrefix: AD
   primaryKeyPrefab: {fileID: 5861302162887998563, guid: cbaff493b628b4c4b9ae25905b2cc3af, type: 3}
   secondaryKeyPrefab: {fileID: 0}
-  primaryKeySpawnPosition: {x: 3.5, y: 0, z: 0}
+  primaryKeySpawnPosition: {x: 6, y: 0.25, z: 0}
   secondaryKeySpawnPosition: {x: 0, y: 0, z: 0}
   normalKeySprite: {fileID: 21300000, guid: 654c66ed2551b4e4a91de9a71d62070d, type: 3}
   highlightKeySprite: {fileID: 21300000, guid: ee6867011e2ee464293e953bf96f7e99, type: 3}
@@ -1293,7 +1294,7 @@ MonoBehaviour:
   successWindow: 0.2
   infiniteLoop: 1
   successToPass: 10
-  failToLose: 10
+  failToLose: 5
   needConsecutiveSuccessToResume: 2
   isHoldMode: 0
   successCount: 0
@@ -2010,6 +2011,10 @@ PrefabInstance:
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: spawnRadius
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
+      propertyPath: numberOfCoins
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: spawnForceMax

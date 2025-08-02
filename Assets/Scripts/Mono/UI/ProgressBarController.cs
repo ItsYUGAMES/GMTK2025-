@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class ProgressBarController : MonoBehaviour
 {
@@ -452,22 +453,32 @@ public class ProgressBarController : MonoBehaviour
         }
 
         // 移动完成后打开商店
-        if (shopManager != null && gameManager.CheckGameplayScene())
+        if (SceneManager.GetActiveScene().ToString() == "Level6")
         {
-            if (GameManager.Instance.isSingleMode == true)
-            {
-                shopManager.OpenShop();
-            }
-            else
-            {
-                gameManager.LoadNextLevel();
-            }
-            
+            gameManager.LoadNextLevel();
         }
         else
         {
-            Debug.LogError("ShopManager 未设置！");
+            if (shopManager != null )
+            {
+                if (GameManager.Instance.isSingleMode == true)
+                {
+                    shopManager.OpenShop();
+                }
+                else
+                {
+                    gameManager.LoadNextLevel();
+                }
+            
+            }
+            else
+            {
+                Debug.LogError("ShopManager 未设置！");
+            }
         }
+        
+
+        
     }
 
     // 公共方法供外部调用

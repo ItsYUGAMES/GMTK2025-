@@ -9,9 +9,7 @@ public class GameManager : MonoBehaviour
 {
     [Header("关卡设置")]
     public List<string> levelScenes = new List<string>(); // 关卡场景名列表
-
-    [Header("进度条设置")]
-    public ProgressBarController progressBar; // 进度条引用
+    
 
     [Header("失败管理")]
     public FailManager failManager;
@@ -125,18 +123,27 @@ public class GameManager : MonoBehaviour
         switch (currentSceneName)
         {
             case "Level1":
+                // SFXManager.Instance.PlayBackgroundMusic(2);
                 LoadScene("Level2");
                 break;
             case "Level2":
+                // SFXManager.Instance.PlayBackgroundMusic(3);
+
                 LoadScene("Level3");
                 break;
             case "Level3":
+                SFXManager.Instance.PlayBackgroundMusic(4);
+
                 LoadScene("Level4");
                 break;
             case "Level4":
+                SFXManager.Instance.PlayBackgroundMusic(5);
+
                 LoadScene("Level5");
                 break;
             case "Level5":
+                SFXManager.Instance.PlayBackgroundMusic(6);
+
                 LoadScene("Level6");
                 break;
             case "Level6":
@@ -176,18 +183,8 @@ public class GameManager : MonoBehaviour
 
         // 更新关卡信息
         UpdateLevelFromCurrentScene();
-
-        if (currentSceneName != "Level2")
-        {
-            return true;
-        }
-
-        // 在 transition 场景中重置对象位置
-        if (currentSceneName == "transition")
-        {
-            // 延迟执行，等待场景完全加载
-            StartCoroutine(WaitAndMoveObjects());
-        }
+        
+        
 
         return false;
     }

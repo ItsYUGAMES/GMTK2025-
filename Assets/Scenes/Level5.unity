@@ -1112,7 +1112,7 @@ Transform:
   m_GameObject: {fileID: 800243439}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 525, y: -100, z: -9000}
+  m_LocalPosition: {x: 525, y: -100, z: 0}
   m_LocalScale: {x: 150, y: 149.95801, z: 149.95801}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -1156,7 +1156,7 @@ MonoBehaviour:
   keyConfigPrefix: AD
   primaryKeyPrefab: {fileID: 5861302162887998563, guid: cbaff493b628b4c4b9ae25905b2cc3af, type: 3}
   secondaryKeyPrefab: {fileID: 0}
-  primaryKeySpawnPosition: {x: 6, y: 0.25, z: 0.3}
+  primaryKeySpawnPosition: {x: 6, y: 0.25, z: 0}
   secondaryKeySpawnPosition: {x: 0, y: 0, z: 0}
   normalKeySprite: {fileID: 21300000, guid: 654c66ed2551b4e4a91de9a71d62070d, type: 3}
   highlightKeySprite: {fileID: 21300000, guid: ee6867011e2ee464293e953bf96f7e99, type: 3}
@@ -1167,7 +1167,7 @@ MonoBehaviour:
   successWindow: 0.2
   infiniteLoop: 1
   successToPass: 10
-  failToLose: 10
+  failToLose: 5
   needConsecutiveSuccessToResume: 2
   isHoldMode: 0
   successCount: 0
@@ -1804,11 +1804,11 @@ MonoBehaviour:
   successKeySprite: {fileID: 21300000, guid: 0a8759d8c70dd914fa48c2fc5b7abfb3, type: 3}
   missKeySprite: {fileID: 21300000, guid: 82dbe38ed28f3c9428a06c14c702899d, type: 3}
   feedbackDisplayDuration: 0.1
-  beatInterval: 0.75
-  successWindow: 0.2
+  beatInterval: 2.2
+  successWindow: 0.3
   infiniteLoop: 1
   successToPass: 10
-  failToLose: 10
+  failToLose: 5
   needConsecutiveSuccessToResume: 2
   isHoldMode: 0
   successCount: 0
@@ -2034,7 +2034,7 @@ MonoBehaviour:
   resetDuration: 2
   windowDuration: 1
   failDisplayDuration: 0.3
-  failToLose: 2
+  failToLose: 5
   autoPressDuration: 1
   scriptsToSuspend:
   - {fileID: 2043806614}
@@ -2262,7 +2262,7 @@ MonoBehaviour:
   keyConfigPrefix: AD
   primaryKeyPrefab: {fileID: 990241953343204501, guid: b79ac090b92413c448b943b9432943f2, type: 3}
   secondaryKeyPrefab: {fileID: 0}
-  primaryKeySpawnPosition: {x: 4.5, y: 0.25, z: 0.3}
+  primaryKeySpawnPosition: {x: 4.5, y: 0.25, z: 0}
   secondaryKeySpawnPosition: {x: 0, y: 0, z: 0}
   normalKeySprite: {fileID: 21300000, guid: 250a8df8f03fec14689ee892664b6878, type: 3}
   highlightKeySprite: {fileID: 21300000, guid: 583f871483d4d1a488ebf7fc8dba999e, type: 3}
@@ -2273,7 +2273,7 @@ MonoBehaviour:
   successWindow: 0.2
   infiniteLoop: 1
   successToPass: 10
-  failToLose: 10
+  failToLose: 5
   needConsecutiveSuccessToResume: 2
   isHoldMode: 0
   successCount: 0
@@ -2367,11 +2367,11 @@ MonoBehaviour:
   successKeySprite: {fileID: 21300000, guid: 5a54c6498291a4247979308f1dd4ac1d, type: 3}
   missKeySprite: {fileID: 21300000, guid: 2fb52ee0816c5db44a4fe160beee9e52, type: 3}
   feedbackDisplayDuration: 0.1
-  beatInterval: 0.75
+  beatInterval: 1.1
   successWindow: 0.2
   infiniteLoop: 1
   successToPass: 10
-  failToLose: 10
+  failToLose: 5
   needConsecutiveSuccessToResume: 2
   isHoldMode: 0
   successCount: 0
@@ -2542,23 +2542,23 @@ PrefabInstance:
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: scriptsToDisable.Array.data[0]
       value: 
-      objectReference: {fileID: 853545017}
+      objectReference: {fileID: 1478846914}
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: scriptsToDisable.Array.data[1]
       value: 
-      objectReference: {fileID: 2086473111}
+      objectReference: {fileID: 853545017}
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: scriptsToDisable.Array.data[2]
       value: 
-      objectReference: {fileID: 1993997965}
+      objectReference: {fileID: 2086473111}
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: scriptsToDisable.Array.data[3]
       value: 
-      objectReference: {fileID: 1869327163}
+      objectReference: {fileID: 1993997965}
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: scriptsToDisable.Array.data[4]
       value: 
-      objectReference: {fileID: 1478846914}
+      objectReference: {fileID: 1869327163}
     - target: {fileID: 6528273224655404209, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
