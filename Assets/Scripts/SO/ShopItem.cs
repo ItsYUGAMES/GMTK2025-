@@ -8,6 +8,7 @@ public class ShopItem
     public Sprite itemIcon;
     public string itemDescription;
     public ItemEffect itemEffect;
+    public ItemType itemType;
 
     public void InitializeFromItemEffect(ItemEffect effect)
     {
@@ -18,6 +19,7 @@ public class ShopItem
             itemPrice = effect.itemPrice;
             itemDescription = effect.itemDescription;
             itemIcon = effect.itemIcon;
+            itemType = effect.itemType;
         }
     }
 }

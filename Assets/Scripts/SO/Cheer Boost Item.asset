@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91cc9037be53a884f8d447cfea0d82e6, type: 3}
   m_Name: Cheer Boost Item
   m_EditorClassIdentifier: 
-  itemName: "\u6B22\u547C\u52A0\u901F"
-  itemDescription: "\u52A0\u901F\u6B22\u547C\u503C\u586B\u5145"
+  itemName: Excited Audience
+  itemDescription: 'Excited Audience: Increase the frequency of the audience''s cheers
+    to clear the level faster.'
   itemIcon: {fileID: 21300000, guid: eabf08c0282d2424a82539754c685cd3, type: 3}
   itemPrice: 5
+  itemType: 1
   isPermanent: 1
   progressMultiplier: 0.7

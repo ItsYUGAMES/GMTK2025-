@@ -9,13 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86327075271e52f4d801090cedd27655, type: 3}
-  m_Name: Extra Life Item
+  m_Script: {fileID: 11500000, guid: 4a629c110bc5d3f4bbd87a875f1c9f73, type: 3}
+  m_Name: HoldButton
   m_EditorClassIdentifier: 
-  itemName: Extra Chance
-  itemDescription: 'Extra Chance: Adds two chances to miss in subsequent levels.'
-  itemIcon: {fileID: 21300000, guid: 3a5b0d23ec8aa9c4482f186b1eff9cc2, type: 3}
+  itemName: Hold Button
+  itemDescription: 'Hold Button: Change the right mouse button to a held button'
+  itemIcon: {fileID: 21300000, guid: cd88f449bbe867f478315ced0e0cad90, type: 3}
   itemPrice: 10
-  itemType: 0
+  itemType: 4
   isPermanent: 1
-  extraLives: 2

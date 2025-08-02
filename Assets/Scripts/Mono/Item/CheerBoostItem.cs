@@ -10,15 +10,7 @@ public class CheerBoostItem : ItemEffect
     [Range(0.5f, 0.9f)]
     public float progressMultiplier = 0.7f;  // 减少填充所需时间倍数（0.7 = 减少30%时间）
 
-    private void OnEnable()
-    {
-        itemName = "欢呼加速";
-        itemDescription = "加速欢呼值填充";
-        itemPrice = 5;
-    
-        isPermanent = true;
-    }
-
+   
     public override void OnPurchase()
     {
         Debug.Log($"购买了 {itemName}，欢呼值填充速度增加");

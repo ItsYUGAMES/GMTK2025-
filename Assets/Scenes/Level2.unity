@@ -260,7 +260,7 @@ MonoBehaviour:
   isSingleKeyMode: 1
   primaryKeyPrefab: {fileID: 990241953343204501, guid: b79ac090b92413c448b943b9432943f2, type: 3}
   secondaryKeyPrefab: {fileID: 0}
-  primaryKeyPosition: {x: -3.5, y: 0, z: 0}
+  primaryKeyPosition: {x: 4.5, y: 0.25, z: 0}
   secondaryKeyPosition: {x: 0, y: 0, z: 0}
   normalKeySprite: {fileID: 21300000, guid: 250a8df8f03fec14689ee892664b6878, type: 3}
   highlightKeySprite: {fileID: 21300000, guid: 583f871483d4d1a488ebf7fc8dba999e, type: 3}
@@ -281,10 +281,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scriptsToPause:
-  - {fileID: 853545017}
   - {fileID: 2043806614}
   - {fileID: 486041705}
-  - {fileID: 1993997965}
 --- !u!114 &72078777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -301,26 +299,13 @@ MonoBehaviour:
   shopItemUI1: {fileID: 1892772281}
   shopItemUI2: {fileID: 1742367458}
   shopItemUI3: {fileID: 1084887574}
-  allAvailableItems:
-  - itemName: 
-    itemPrice: 0
-    itemIcon: {fileID: 0}
-    itemDescription: 
-    itemEffect: {fileID: 11400000, guid: d676394265aa6d94fbb2aa6dfd3c1fef, type: 2}
-  - itemName: 
-    itemPrice: 0
-    itemIcon: {fileID: 0}
-    itemDescription: 
-    itemEffect: {fileID: 11400000, guid: 1416bfa3877388a4eb186885bea7c0ba, type: 2}
-  - itemName: 
-    itemPrice: 0
-    itemIcon: {fileID: 0}
-    itemDescription: 
-    itemEffect: {fileID: 11400000, guid: ffeccba623678d8489f8d3dde9f82d93, type: 2}
-  availableItemEffects:
+  itemEffects:
   - {fileID: 11400000, guid: d676394265aa6d94fbb2aa6dfd3c1fef, type: 2}
   - {fileID: 11400000, guid: 1416bfa3877388a4eb186885bea7c0ba, type: 2}
   - {fileID: 11400000, guid: ffeccba623678d8489f8d3dde9f82d93, type: 2}
+  - {fileID: 11400000, guid: 3fb2892c840c341428d3a77a250783c4, type: 2}
+  - {fileID: 11400000, guid: a92100eb100490b438dc4cdcd012cf0b, type: 2}
+  itemsToShow: 3
 --- !u!1 &135135261 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8312024376342021396, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
@@ -889,6 +874,34 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 72078777}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: CloseShop
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ShopManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1101,7 +1114,7 @@ MonoBehaviour:
   keyConfigPrefix: AD
   primaryKeyPrefab: {fileID: 5861302162887998563, guid: cbaff493b628b4c4b9ae25905b2cc3af, type: 3}
   secondaryKeyPrefab: {fileID: 0}
-  primaryKeySpawnPosition: {x: 3.5, y: 0, z: 0}
+  primaryKeySpawnPosition: {x: 6, y: 0.25, z: 0}
   secondaryKeySpawnPosition: {x: 0, y: 0, z: 0}
   normalKeySprite: {fileID: 21300000, guid: 654c66ed2551b4e4a91de9a71d62070d, type: 3}
   highlightKeySprite: {fileID: 21300000, guid: ee6867011e2ee464293e953bf96f7e99, type: 3}
@@ -1114,6 +1127,7 @@ MonoBehaviour:
   successToPass: 10
   failToLose: 10
   needConsecutiveSuccessToResume: 4
+  isHoldMode: 0
   successCount: 0
   isPaused: 0
   consecutiveSuccessOnFailedKey: 0
@@ -1734,7 +1748,7 @@ MonoBehaviour:
   keyConfigPrefix: AD
   primaryKeyPrefab: {fileID: 990241953343204501, guid: b79ac090b92413c448b943b9432943f2, type: 3}
   secondaryKeyPrefab: {fileID: 0}
-  primaryKeySpawnPosition: {x: -3.5, y: 0, z: 0}
+  primaryKeySpawnPosition: {x: 4.5, y: 0.25, z: 0}
   secondaryKeySpawnPosition: {x: 0, y: 0, z: 0}
   normalKeySprite: {fileID: 21300000, guid: 250a8df8f03fec14689ee892664b6878, type: 3}
   highlightKeySprite: {fileID: 21300000, guid: 583f871483d4d1a488ebf7fc8dba999e, type: 3}
@@ -1747,6 +1761,7 @@ MonoBehaviour:
   successToPass: 10
   failToLose: 10
   needConsecutiveSuccessToResume: 4
+  isHoldMode: 0
   successCount: 0
   isPaused: 0
   consecutiveSuccessOnFailedKey: 0
@@ -1921,12 +1936,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: scriptsToDisable.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: scriptsToDisable.Array.data[0]
       value: 
       objectReference: {fileID: 853545017}
+    - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
+      propertyPath: scriptsToDisable.Array.data[1]
+      value: 
+      objectReference: {fileID: 1993997965}
+    - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
+      propertyPath: scriptsToDisable.Array.data[2]
+      value: 
+      objectReference: {fileID: 1993997965}
+    - target: {fileID: 5340019796867202391, guid: c54329f370fa412408968d2e454d86e0, type: 3}
+      propertyPath: scriptsToDisable.Array.data[3]
+      value: 
+      objectReference: {fileID: 1993997965}
     - target: {fileID: 6528273224655404209, guid: c54329f370fa412408968d2e454d86e0, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

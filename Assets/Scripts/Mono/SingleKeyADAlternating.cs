@@ -21,6 +21,14 @@ public class SingleKeyADAlternating : RhythmKeyControllerBase
     {
         if (isGameEnded) return;
 
+        // 如果在长按模式下
+        if (isHoldMode)
+        {
+            HandleHoldInput();
+            return;
+        }
+
+        // 原有的正常模式逻辑
         if (isPaused)
         {
             // 暂停状态下的输入处理

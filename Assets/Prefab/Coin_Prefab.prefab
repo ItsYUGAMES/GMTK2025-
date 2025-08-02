@@ -102,7 +102,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 0.25
+  m_GravityScale: 0.15
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 472c9a7ba3952374cbf1a74b98a8be64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coinValue: 10
+  coinValue: 1
   destroyBelowY: -10
   coinCollectSFX: {fileID: 8300000, guid: e0b1f44f64b8b6c4e9bb7bd0b30382df, type: 3}
 --- !u!61 &7283861879375800676

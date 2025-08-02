@@ -414,9 +414,9 @@ MonoBehaviour:
   - {fileID: 8300000, guid: e809c778ed3f67c428187c15d3495ad1, type: 3}
   - {fileID: 8300000, guid: 5165aae682202e7478fce253163ace75, type: 3}
   - {fileID: 8300000, guid: 6751350c7e2f45c458d485978a465bdc, type: 3}
-  - {fileID: 8300000, guid: e99f220f45eb25a49b241496f3a3443d, type: 3}
-  - {fileID: 8300000, guid: 53497b2e6c0808149a9367477a6f57a4, type: 3}
   - {fileID: 8300000, guid: 1940848bf8fb3874e80c5167849c2e82, type: 3}
+  - {fileID: 8300000, guid: 53497b2e6c0808149a9367477a6f57a4, type: 3}
+  - {fileID: 8300000, guid: e99f220f45eb25a49b241496f3a3443d, type: 3}
   - {fileID: 8300000, guid: b76f17fc43bac9b488f72db50f26a6f0, type: 3}
   musicVolume: 0.5
   soundEffects: []

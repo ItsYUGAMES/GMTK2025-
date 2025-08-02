@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 664c614f91881d24793bb4e4b1171f1a, type: 3}
   m_Name: Auto Play Item
   m_EditorClassIdentifier: 
-  itemName: "\u81EA\u52A8\u64AD\u653E"
-  itemDescription: "\u8BA9\u4E00\u4E2A\u89D2\u8272\u81EA\u52A8\u5B8C\u6210\u6309\u952E"
+  itemName: Auto-Key
+  itemDescription: Auto-Key:The Space key will be automatically pressed throughout
+    the level, eliminating the need for further pressing.
   itemIcon: {fileID: 21300000, guid: 040878feb016d844a939ebaeb00646fe, type: 3}
-  itemPrice: 20
+  itemPrice: 15
+  itemType: 3
   isPermanent: 1
-  autoPlayAccuracy: 0.95
-  targetController: 0
-  autoSelectStrategy: 0
+  autoClickInterval: 0.5

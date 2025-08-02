@@ -9,14 +9,7 @@ public class ExtraRewardItem : ItemEffect
     [Header("道具效果")]
     public int extraCoins = 5;  // 额外获得的金币数量
 
-    private void OnEnable()
-    {
-        itemName = "额外奖励";
-        itemDescription = "完成后获得额外金币";
-        itemPrice = 5;
-     
-        isPermanent = true;  // 一次性效果
-    }
+  
 
     public override void OnPurchase()
     {

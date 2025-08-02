@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class StartManager : MonoBehaviour
 {
@@ -135,20 +136,56 @@ public class StartManager : MonoBehaviour
         }
     }
 
-    private IEnumerator WaitForLongPressAndStart(LongPressController longPressController)
+    private IEnumerator WaitForLongPressAndStart(LongPressController firstController)
     {
         // 等待移动完成
         yield return new WaitUntil(() => !isMoving);
 
-        Debug.Log("请进行第一次长按以开始节奏序列");
+        // 获取当前场景名称
+        string currentSceneName = SceneManager.GetActiveScene().name;
 
-        // 等待长按成功
-        yield return new WaitUntil(() => longPressController.successCount >= 1);
+        if (currentSceneName == "Level6")
+        {
+            Debug.Log("Level6场景：等待两个长按控制器的成功");
 
-        Debug.Log("第一次长按成功，开始序列");
+            // 查找第二个长按控制器
+            LongPressController[] allControllers = FindObjectsOfType<LongPressController>();
+            LongPressController secondController = null;
 
-        // 直接完成序列，恢复脚本并禁用StartManager
-        OnSequenceCompleted();
+            foreach (var controller in allControllers)
+            {
+                if (controller.name == "E") // 根据实际命名调整
+                {
+                    secondController = controller;
+                    break;
+                }
+            }
+
+            if (secondController != null)
+            {
+                Debug.Log("找到第二个长按控制器");
+                // 等待两个控制器都至少成功一次
+                yield return new WaitUntil(() =>
+                    firstController.successCount >= 1 && secondController.successCount >= 1);
+
+                Debug.Log("Level6：两个长按控制器都成功了，开始序列");
+                OnSequenceCompleted();
+            }
+            
+        }
+        else if (currentSceneName == "Level3")
+        {
+            Debug.Log("Level3场景：请进行第一次长按以开始节奏序列");
+            // 等待第一个长按控制器成功
+            yield return new WaitUntil(() => firstController.successCount >= 1);
+            Debug.Log("Level3：第一次长按成功，开始序列");
+            OnSequenceCompleted();
+        }
+        else
+        {
+            Debug.Log($"{currentSceneName}场景：直接开始序列");
+            StartCoroutine(StartSequence());
+        }
     }
 
     void Update()

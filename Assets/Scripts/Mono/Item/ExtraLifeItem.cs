@@ -10,14 +10,7 @@ public class ExtraLifeItem : ItemEffect
     [Header("道具效果")]
     public int extraLives = 1;  // 增加的生命数量
 
-    private void OnEnable()
-    {
-        itemName = "额外生命";
-        itemDescription = "增加一条生命";
-        itemPrice = 10;
-
-        isPermanent = true;
-    }
+    
 
     public override void OnPurchase()
     {

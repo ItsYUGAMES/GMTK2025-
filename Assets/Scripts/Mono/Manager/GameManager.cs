@@ -116,6 +116,8 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 切换到下一关卡
     /// </summary>
+    ///
+    [ContextMenu("加载下一关卡")]
     public void LoadNextLevel()
     {
         string currentSceneName = SceneManager.GetActiveScene().name;

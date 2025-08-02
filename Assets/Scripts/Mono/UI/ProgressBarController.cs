@@ -454,7 +454,15 @@ public class ProgressBarController : MonoBehaviour
         // 移动完成后打开商店
         if (shopManager != null && gameManager.CheckGameplayScene())
         {
-            shopManager.OpenShop();
+            if (GameManager.Instance.isSingleMode == true)
+            {
+                shopManager.OpenShop();
+            }
+            else
+            {
+                gameManager.LoadNextLevel();
+            }
+            
         }
         else
         {

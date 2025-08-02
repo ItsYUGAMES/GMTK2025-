@@ -390,6 +390,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   musicAudioSource: {fileID: 0}
   sfxAudioSource: {fileID: 0}
+  musicAudioSources: []
   backgroundMusic:
   - {fileID: 0}
   musicVolume: 0.5
@@ -450,26 +451,13 @@ MonoBehaviour:
   shopItemUI1: {fileID: 1444067425}
   shopItemUI2: {fileID: 670676486}
   shopItemUI3: {fileID: 1364395856}
-  allAvailableItems:
-  - itemName: 
-    itemPrice: 0
-    itemIcon: {fileID: 0}
-    itemDescription: 
-    itemEffect: {fileID: 11400000, guid: d676394265aa6d94fbb2aa6dfd3c1fef, type: 2}
-  - itemName: 
-    itemPrice: 0
-    itemIcon: {fileID: 0}
-    itemDescription: 
-    itemEffect: {fileID: 11400000, guid: 1416bfa3877388a4eb186885bea7c0ba, type: 2}
-  - itemName: 
-    itemPrice: 0
-    itemIcon: {fileID: 0}
-    itemDescription: 
-    itemEffect: {fileID: 11400000, guid: ffeccba623678d8489f8d3dde9f82d93, type: 2}
-  availableItemEffects:
+  itemEffects:
   - {fileID: 11400000, guid: d676394265aa6d94fbb2aa6dfd3c1fef, type: 2}
   - {fileID: 11400000, guid: 1416bfa3877388a4eb186885bea7c0ba, type: 2}
   - {fileID: 11400000, guid: ffeccba623678d8489f8d3dde9f82d93, type: 2}
+  - {fileID: 11400000, guid: 3fb2892c840c341428d3a77a250783c4, type: 2}
+  - {fileID: 11400000, guid: a92100eb100490b438dc4cdcd012cf0b, type: 2}
+  itemsToShow: 3
 --- !u!114 &104757652
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -487,6 +475,7 @@ MonoBehaviour:
   extraRewardActive: 0
   extraLifeActive: 0
   autoPlayActive: 0
+  holdModeActive: 0
 --- !u!1 &178882622
 GameObject:
   m_ObjectHideFlags: 0
@@ -1009,9 +998,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6256834656301202115, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8312024376342021396, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
       propertyPath: m_Name
       value: ShopPanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 104757651}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: CloseShop
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ShopManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400002701083788398, guid: 4b574bdbb4316784e8bb33a5687e9211, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1460,7 +1481,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -1662,6 +1683,7 @@ MonoBehaviour:
   failToLose: 2
   autoPressDuration: 1
   scriptsToSuspend: []
+  successCount: 0
 --- !u!4 &1887652056
 Transform:
   m_ObjectHideFlags: 0

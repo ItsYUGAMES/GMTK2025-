@@ -100,7 +100,7 @@ public class ShopItemUI : MonoBehaviour
         string description = "";
         if (currentItem.itemEffect != null)
         {
-            description = currentItem.itemEffect.GetDetailedDescription();
+            description = currentItem.itemEffect.itemDescription+"Price:"+currentItem.itemEffect.itemPrice;
         }
         else
         {

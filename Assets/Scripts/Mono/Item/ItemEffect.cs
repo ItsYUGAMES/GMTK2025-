@@ -10,7 +10,7 @@ public abstract class ItemEffect : ScriptableObject
     public string itemDescription = "默认描述";
     public Sprite itemIcon;
     public int itemPrice = 10;
-
+    public ItemType itemType;
     [Header("道具属性")]
    
     public bool isPermanent = true;     // 是否为永久效果

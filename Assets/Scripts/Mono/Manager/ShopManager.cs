@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.UI;
 using TMPro;
 
@@ -12,10 +13,11 @@ public class ShopManager : MonoBehaviour
     public ShopItemUI shopItemUI3;
 
     [Header("商品数据")]
-    public List<ShopItem> allAvailableItems;
-    
-    [Header("道具效果列表")]
-    public List<ItemEffect> availableItemEffects;
+    public ItemEffect[] itemEffects; // 在Inspector中设置ItemEffect资源
+    private List<ShopItem> allAvailableItems = new List<ShopItem>();
+    private List<ShopItem> currentShopItems = new List<ShopItem>();
+
+    [SerializeField] private int itemsToShow = 3;
 
     void Start()
     {
@@ -23,204 +25,242 @@ public class ShopManager : MonoBehaviour
         {
             shopPanel.SetActive(false);
         }
-        else
-        {
-            Debug.LogError("Shop Panel 未设置！");
-        }
-
         InitializeShopItems();
         BindBuyButtonEvents();
     }
 
     void InitializeShopItems()
     {
-        // 从ItemEffect列表创建ShopItem对象
         allAvailableItems.Clear();
-        
-        foreach (var itemEffect in availableItemEffects)
+        foreach (var effect in itemEffects)
         {
-            if (itemEffect != null)
+            if (effect != null)
             {
-                ShopItem shopItem = new ShopItem();
-                shopItem.InitializeFromItemEffect(itemEffect);
+                var shopItem = new ShopItem();
+                shopItem.InitializeFromItemEffect(effect);
                 allAvailableItems.Add(shopItem);
-                Debug.Log($"已初始化商品: {itemEffect.itemName}");
             }
-            else
+        }
+        Debug.Log($"已初始化 {allAvailableItems.Count} 个商品");
+    }
+
+    private void RefreshShopItems()
+    {
+        currentShopItems.Clear();
+        Debug.Log("开始刷新商店道具...");
+        Debug.Log($"总共有 {allAvailableItems.Count} 个可用道具");
+
+        // 过滤出未购买的道具
+        List<ShopItem> availableItems = new List<ShopItem>();
+        foreach (var item in allAvailableItems)
+        {
+            bool isPurchased = IsItemPurchased(item.itemType);
+            string status = isPurchased ? "已购买" : "未购买";
+            Debug.Log($"道具: {item.itemName}, 类型: {item.itemType}, 状态: {status}");
+
+            if (!isPurchased)
             {
-                Debug.LogWarning("发现空的 ItemEffect!");
+                availableItems.Add(item);
             }
         }
 
-        Debug.Log($"总共初始化了 {allAvailableItems.Count} 个商品");
+        Debug.Log($"过滤后可用的未购买道具数量: {availableItems.Count}");
+
+        // 如果没有可用道具，直接返回
+        if (availableItems.Count == 0)
+        {
+            Debug.Log("没有可用的未购买道具，商店将为空");
+            return;
+        }
+
+        // 随机选择不重复的道具
+        int itemCount = Mathf.Min(itemsToShow, availableItems.Count);
+        HashSet<int> selectedIndices = new HashSet<int>();
+
+        while (selectedIndices.Count < itemCount)
+        {
+            int randomIndex = Random.Range(0, availableItems.Count);
+            if (selectedIndices.Add(randomIndex)) // HashSet.Add 如果添加成功返回 true
+            {
+                currentShopItems.Add(availableItems[randomIndex]);
+                Debug.Log($"添加商品: {availableItems[randomIndex].itemName}");
+            }
+        }
+
+        Debug.Log($"刷新商店完成，当前可购买商品数量：{currentShopItems.Count}");
     }
 
-    [ContextMenu("打开商店")]
+    private bool IsItemPurchased(ItemType itemType)
+    {
+        if (PlayerDataManager.Instance == null)
+        {
+            Debug.LogWarning("PlayerDataManager 实例未找到，无法检查道具购买状态");
+            return false;
+        }
+
+        bool isPurchased = false;
+
+        switch (itemType)
+        {
+            case ItemType.CheerBoost:
+                isPurchased = PlayerDataManager.Instance.cheerBoostActive;
+                break;
+            case ItemType.ExtraReward:
+                isPurchased = PlayerDataManager.Instance.extraRewardActive;
+                break;
+            case ItemType.ExtraLife:
+                isPurchased = PlayerDataManager.Instance.extraLifeActive;
+                break;
+            case ItemType.AutoPlay:
+                isPurchased = PlayerDataManager.Instance.autoPlayActive;
+                break;
+            case ItemType.HoldButton:
+                isPurchased = PlayerDataManager.Instance.holdModeActive;
+                break;
+            default:
+                isPurchased = false;
+                break;
+        }
+
+        Debug.Log($"检查道具类型 {itemType} 的购买状态: {isPurchased}");
+        return isPurchased;
+    }
+
+    [ContextMenu("Open Shop")]
     public void OpenShop()
     {
         Time.timeScale = 0f;
         if (shopPanel != null)
         {
             shopPanel.SetActive(true);
-            Debug.Log("商店已打开。");
+            RefreshShopItems();
             PopulateShopItems();
-        }
-    }
-
-    public void CloseShop()
-    {
-        Time.timeScale = 1f; // 恢复游戏速度
-        if (shopPanel != null)
-        {
-            shopPanel.SetActive(false);
-            Debug.Log("商店已关闭。");
-        }
-        string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        switch (currentSceneName)
-        {
-            case "Level1":
-                SFXManager.Instance.PlayBackgroundMusic(2);
-                Debug.Log("商店关闭：准备播放Level2音乐");
-                break;
-            case "Level2":
-                SFXManager.Instance.PlayBackgroundMusic(3);
-                Debug.Log("商店关闭：准备播放Level3音乐");
-                break;
-            case "Level3":
-                SFXManager.Instance.PlayBackgroundMusic(4);
-                Debug.Log("商店关闭：准备播放Level4音乐");
-                break;
-            case "Level4":
-                SFXManager.Instance.PlayBackgroundMusic(5);
-                Debug.Log("商店关闭：准备播放Level5音乐");
-                break;
-            case "Level5":
-                SFXManager.Instance.PlayBackgroundMusic(6);
-                Debug.Log("商店关闭：准备播放Level6音乐");
-                break;
-        }
-        GameManager.Instance.LoadNextLevel();
-    }
-
-    void BindBuyButtonEvents()
-    {
-        if (shopItemUI1 != null && shopItemUI1.buyButton != null)
-        {
-            shopItemUI1.buyButton.onClick.RemoveAllListeners();
-            shopItemUI1.buyButton.onClick.AddListener(() => OnBuyButtonClicked(0));
-        }
-        
-        if (shopItemUI2 != null && shopItemUI2.buyButton != null)
-        {
-            shopItemUI2.buyButton.onClick.RemoveAllListeners();
-            shopItemUI2.buyButton.onClick.AddListener(() => OnBuyButtonClicked(1));
-        }
-        
-        if (shopItemUI3 != null && shopItemUI3.buyButton != null)
-        {
-            shopItemUI3.buyButton.onClick.RemoveAllListeners();
-            shopItemUI3.buyButton.onClick.AddListener(() => OnBuyButtonClicked(2));
+            Debug.Log("商店已打开，商品已随机刷新");
         }
     }
 
     void OnBuyButtonClicked(int itemIndex)
     {
-        if (itemIndex >= 0 && itemIndex < allAvailableItems.Count)
+        if (itemIndex >= 0 && itemIndex < currentShopItems.Count)
         {
-            ShopItem itemToBuy = allAvailableItems[itemIndex];
-            if (itemToBuy != null && itemToBuy.itemEffect != null)
-            {
-                // 检查是否可以购买
-                if (!itemToBuy.itemEffect.CanPurchase())
-                {
-                    Debug.LogWarning($"无法购买：{itemToBuy.itemName}");
-                    return;
-                }
+            ShopItem itemToBuy = currentShopItems[itemIndex];
 
-                // 使用PlayerDataManager进行金币扣除
-                if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.DeductPlayerGold(itemToBuy.itemPrice))
-                {
-                    Debug.Log($"成功购买了：{itemToBuy.itemName}");
-                    
-                    // 执行道具效果
-                    itemToBuy.itemEffect.OnPurchase();
-                    
-                    // 如果是永久性道具，禁用购买按钮
-                    if (itemToBuy.itemEffect.isPermanent)
-                    {
-                        DisableBuyButton(itemIndex);
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"金币不足，无法购买：{itemToBuy.itemName}");
-                }
+            if (!PlayerDataManager.Instance.DeductPlayerGold(itemToBuy.itemPrice))
+            {
+                Debug.LogWarning($"金币不足，无法购买：{itemToBuy.itemName}");
+                return;
+            }
+
+            // 激活道具效果
+            switch (itemToBuy.itemType)
+            {
+                case ItemType.CheerBoost:
+                    PlayerDataManager.Instance.SetCheerBoostActive(true);
+                    break;
+                case ItemType.ExtraReward:
+                    PlayerDataManager.Instance.SetExtraRewardActive(true);
+                    break;
+                case ItemType.ExtraLife:
+                    PlayerDataManager.Instance.SetExtraLifeActive(true);
+                    break;
+                case ItemType.AutoPlay:
+                    PlayerDataManager.Instance.SetAutoPlayActive(true);
+                    break;
+                case ItemType.HoldButton:
+                    PlayerDataManager.Instance.SetHoldModeActive(true);
+                    break;
+            }
+
+            // 执行道具效果
+            if (itemToBuy.itemEffect != null)
+            {
+                itemToBuy.itemEffect.OnPurchase();
+            }
+
+            Debug.Log($"成功购买了：{itemToBuy.itemName}");
+
+            // 立即刷新商店显示
+            RefreshShopItems();
+            PopulateShopItems();
+
+            // 如果没有可购买的商品了，关闭商店
+            if (currentShopItems.Count == 0)
+            {
+                CloseShop();
             }
         }
-        else
-        {
-            Debug.LogWarning($"尝试购买的商品索引 {itemIndex} 超出范围。");
-        }
     }
-
-    void DisableBuyButton(int itemIndex)
+    [ContextMenu("Test Close")]
+    public void TestClose()
     {
-        Button targetButton = null;
-        switch(itemIndex)
+        Time.timeScale = 1f;
+        if (shopPanel != null)
         {
-            case 0: targetButton = shopItemUI1?.buyButton; break;
-            case 1: targetButton = shopItemUI2?.buyButton; break;
-            case 2: targetButton = shopItemUI3?.buyButton; break;
-        }
-
-        if (targetButton != null)
-        {
-            targetButton.interactable = false;
+            shopPanel.SetActive(false);
+            Debug.Log("商店已关闭");
         }
     }
-
+    public void CloseShop()
+    {
+        Time.timeScale = 1f;
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(false);
+            Debug.Log("商店已关闭");
+        }
+        GameManager.Instance.LoadNextLevel();
+    }
     void PopulateShopItems()
     {
         if (shopItemUI1 != null)
         {
-            if (allAvailableItems.Count > 0)
+            shopItemUI1.enabled = true; // 启用组件
+            shopItemUI1.gameObject.SetActive(currentShopItems.Count > 0);
+            if (currentShopItems.Count > 0)
             {
-                shopItemUI1.gameObject.SetActive(true);
-                shopItemUI1.SetItem(allAvailableItems[0]);
-                shopItemUI1.buyButton.interactable = allAvailableItems[0].itemEffect.CanPurchase();
-            }
-            else 
-            {
-                shopItemUI1.gameObject.SetActive(false);
+                shopItemUI1.SetItem(currentShopItems[0]);
             }
         }
-    
+
         if (shopItemUI2 != null)
         {
-            if (allAvailableItems.Count > 1)
+            shopItemUI2.enabled = true; // 启用组件
+            shopItemUI2.gameObject.SetActive(currentShopItems.Count > 1);
+            if (currentShopItems.Count > 1)
             {
-                shopItemUI2.gameObject.SetActive(true);
-                shopItemUI2.SetItem(allAvailableItems[1]);
-                shopItemUI2.buyButton.interactable = allAvailableItems[1].itemEffect.CanPurchase();
-            }
-            else 
-            {
-                shopItemUI2.gameObject.SetActive(false);
+                shopItemUI2.SetItem(currentShopItems[1]);
             }
         }
-    
+
         if (shopItemUI3 != null)
         {
-            if (allAvailableItems.Count > 2)
+            shopItemUI3.enabled = true; // 启用组件
+            shopItemUI3.gameObject.SetActive(currentShopItems.Count > 2);
+            if (currentShopItems.Count > 2)
             {
-                shopItemUI3.gameObject.SetActive(true);
-                shopItemUI3.SetItem(allAvailableItems[2]);
-                shopItemUI3.buyButton.interactable = allAvailableItems[2].itemEffect.CanPurchase();
-            }
-            else 
-            {
-                shopItemUI3.gameObject.SetActive(false);
+                shopItemUI3.SetItem(currentShopItems[2]);
             }
         }
     }
+
+    void BindBuyButtonEvents()
+    {
+        if (shopItemUI1?.buyButton != null)
+            shopItemUI1.buyButton.onClick.AddListener(() => OnBuyButtonClicked(0));
+
+        if (shopItemUI2?.buyButton != null)
+            shopItemUI2.buyButton.onClick.AddListener(() => OnBuyButtonClicked(1));
+
+        if (shopItemUI3?.buyButton != null)
+            shopItemUI3.buyButton.onClick.AddListener(() => OnBuyButtonClicked(2));
+    }
+}
+
+public enum ItemType
+{
+    ExtraLife,
+    CheerBoost,
+    ExtraReward,
+    AutoPlay,
+    HoldButton
 }

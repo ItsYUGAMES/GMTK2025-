@@ -11,14 +11,7 @@
         [UnityEngine.Header("道具效果")]
         public float autoClickInterval = 0.5f;  // 自动点击间隔（秒）
 
-        private void OnEnable()
-        {
-            itemName = "自动游戏";
-            itemDescription = "自动进行游戏";
-            itemPrice = 15;
-
-            isPermanent = true;
-        }
+       
 
         public override void OnPurchase()
         {

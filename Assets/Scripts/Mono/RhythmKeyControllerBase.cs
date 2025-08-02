@@ -42,7 +42,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     private float baseBeatInterval;
 
     [Header("道具模式")]
-    private bool isHoldMode = false;
+    public bool isHoldMode = false;
     private float holdDuration = 0.5f;
     private bool isAutoPlay = false;
     private float autoPlayAccuracy = 0.95f;
@@ -109,17 +109,6 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
     protected virtual void Start()
     {
         ApplyPendingItemEffects();
-
-        if (PlayerPrefs.GetInt("HoldModeEnabled", 0) == 1)
-        {
-            EnableHoldMode(PlayerPrefs.GetFloat("HoldDuration", 0.5f));
-        }
-
-        if (PlayerPrefs.GetInt("AutoPlayEnabled", 0) == 1)
-        {
-            EnableAutoPlay(PlayerPrefs.GetFloat("AutoPlayAccuracy", 0.95f));
-        }
-
         SetAllKeysSprite(normalKeySprite);
         StartNextBeat();
     }
@@ -200,42 +189,36 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         }
     }
 
-    private void HandleHoldInput()
+    protected void HandleHoldInput()
     {
-        if (Input.GetKeyDown(keyConfig.primaryKey) && !isHolding && expectedKey == keyConfig.primaryKey)
+        // 开始按下时记录
+        if (Input.GetKeyDown(keyConfig.primaryKey))
         {
             isHolding = true;
-            holdStartTime = Time.time;
             currentHoldKey = keyConfig.primaryKey;
-            ShowFeedback(keyConfig.primaryKey, highlightKeySprite);
+            ShowFeedback(keyConfig.primaryKey, successKeySprite); // 直接显示成功状态
         }
 
-        if (Input.GetKeyDown(keyConfig.secondaryKey) && !isHolding && expectedKey == keyConfig.secondaryKey)
+        // 持续按住时保持成功状态
+        if (isHolding && Input.GetKey(keyConfig.primaryKey))
         {
-            isHolding = true;
-            holdStartTime = Time.time;
-            currentHoldKey = keyConfig.secondaryKey;
-            ShowFeedback(keyConfig.secondaryKey, highlightKeySprite);
-        }
-
-        if (isHolding && Input.GetKeyUp(currentHoldKey))
-        {
-            isHolding = false;
-            float holdTime = Time.time - holdStartTime;
-
-            if (holdTime >= holdDuration && waitingForInput && currentHoldKey == expectedKey)
+            if (waitingForInput)
             {
                 OnBeatSuccess();
             }
-            else
-            {
-                ShowFeedback(currentHoldKey, missKeySprite);
-                if (waitingForInput)
-                {
-                    OnBeatFailed();
-                }
-            }
+            SetKeySprite(keyConfig.primaryKey, successKeySprite); // 保持成功状态
+        }
+
+        // 松开按键时立即判定失败并重置状态
+        if (isHolding && Input.GetKeyUp(keyConfig.primaryKey))
+        {
+            isHolding = false;
             currentHoldKey = KeyCode.None;
+            ShowFeedback(keyConfig.primaryKey, missKeySprite);
+            if (waitingForInput)
+            {
+                OnBeatFailed();
+            }
         }
     }
 
@@ -410,11 +393,19 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         Debug.Log($"[{keyConfigPrefix}] 成功窗口增加 {additionalTime} 秒，当前成功窗口: {successWindow}");
     }
 
-    public void EnableHoldMode(float duration)
+    public void EnableHoldMode()
     {
         isHoldMode = true;
-        holdDuration = duration;
-        Debug.Log($"[{keyConfigPrefix}] 启用长按模式，需要按住 {duration} 秒");
+      
+    }
+
+// 添加禁用方法
+    public void DisableHoldMode()
+    {
+        isHoldMode = false;
+        isHolding = false;
+        currentHoldKey = KeyCode.None;
+        Debug.Log($"[{keyConfigPrefix}] 禁用长按模式");
     }
 
     public void EnableAutoPlay(float accuracy)
@@ -430,7 +421,7 @@ public abstract class RhythmKeyControllerBase : MonoBehaviour
         failToLose = baseFailToLose;
         successWindow = baseSuccessWindow;
         beatInterval = baseBeatInterval;
-        isHoldMode = false;
+        DisableHoldMode();  // 使用新方法
         isAutoPlay = false;
         Debug.Log($"[{keyConfigPrefix}] 所有道具效果已重置");
     }
